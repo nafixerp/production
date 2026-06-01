@@ -1,5 +1,8 @@
 <?php
 namespace App\Http\Controllers;
+
+use App\Models\ChartOfAccount;
+use App\Models\Daybook;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -7,32 +10,50 @@ class CashBookController extends Controller
 {
     public function index(Request $request)
     {
-        return view('generic.report', ['title'=>'Cash Book','slug'=>'cash-book']);
-    }
+        $fromDate = $request->from ?? today()->toDateString();
+        $toDate   = $request->to ?? today()->toDateString();
 
-    public function store(Request $request)
-    {
-        return redirect()->back()->with('success','Saved successfully.');
-    }
+        // Find cash accounts (account_type = 'cash' or name contains 'cash')
+        $cashAccounts = ChartOfAccount::where('status',1)
+            ->where('is_bank_account', 0)
+            ->where(function($q) {
+                $q->where('account_type', 'cash')
+                  ->orWhere('name', 'like', '%Cash%');
+            })->get();
 
-    public function createBackup() {
-        return redirect()->back()->with('success','Backup initiated.');
-    }
+        $cashAccountIds = $cashAccounts->pluck('id')->toArray();
 
-    public function update(Request $request, $id=null) {
-        return redirect()->back()->with('success','Settings saved.');
-    }
+        $openingBalance = 0;
+        foreach ($cashAccounts as $acc) {
+            $obBase = $acc->ob_type === 'dr' ? -abs($acc->opening_balance) : abs($acc->opening_balance);
+            $prior = Daybook::where('account_id', $acc->id)->where('tdate','<',$fromDate)->sum('amount');
+            $openingBalance += ($obBase + $prior);
+        }
 
-    public function login(Request $request) {
-        return response()->json(['status'=>'ok']);
-    }
+        $entries = Daybook::whereIn('account_id', $cashAccountIds)
+            ->whereBetween('tdate', [$fromDate, $toDate])
+            ->orderBy('tdate','asc')->orderBy('id','asc')->get();
 
-    public function stockCheck($item_id) {
-        $stock = DB::table('stock_ledger')->where('item_id',$item_id)->sum('in_qty') - DB::table('stock_ledger')->where('item_id',$item_id)->sum('out_qty');
-        return response()->json(['item_id'=>$item_id,'stock'=>$stock]);
-    }
+        $totalReceipts = $entries->where('amount', '>', 0)->sum('amount'); // CR
+        $totalPayments = $entries->where('amount', '<', 0)->sum(fn($e) => abs($e->amount)); // DR
+        $closingBalance = $openingBalance + $entries->sum('amount');
 
-    public function dispatchList() {
-        return response()->json(['dispatches'=>[]]);
+        // Build rows with running balance
+        $rows = [];
+        $running = $openingBalance;
+        foreach ($entries as $e) {
+            $running += $e->amount;
+            $rows[] = [
+                'entry'   => $e,
+                'dr'      => $e->amount < 0 ? abs($e->amount) : 0,
+                'cr'      => $e->amount > 0 ? $e->amount : 0,
+                'balance' => $running,
+            ];
+        }
+
+        return view('finance.cash-book.index', compact(
+            'rows','openingBalance','closingBalance','totalReceipts','totalPayments',
+            'fromDate','toDate','cashAccounts'
+        ));
     }
 }

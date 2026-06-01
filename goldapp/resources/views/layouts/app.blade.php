@@ -364,6 +364,9 @@
                     <a class="tn-link" href="{{ route('taxes.index') }}">Tax / GST</a>
                     <a class="tn-link" href="{{ route('hsn-sac.index') }}">HSN / SAC</a>
                     <a class="tn-link" href="{{ route('accounts.index') }}">Chart of Accounts</a>
+                    <div class="tn-col-title" style="margin-top:8px">Settings</div>
+                    <a class="tn-link" href="{{ route('financial-years.index') }}">Financial Year</a>
+                    <a class="tn-link" href="{{ route('sequences.index') }}">Sequence Config</a>
                 </div>
                 <div class="tn-col">
                     <div class="tn-col-title">Items</div>
@@ -413,6 +416,7 @@
                     <a class="tn-link" href="{{ route('sales-orders.index') }}">Sales Order</a>
                     <a class="tn-link" href="{{ route('sales.index') }}">Sales Invoice</a>
                     <a class="tn-link" href="{{ route('dispatch-orders.index') }}">Dispatch Order</a>
+                    <a class="tn-link" href="{{ route('couriers.index') }}">Courier Shipment</a>
                     <a class="tn-link" href="{{ route('sales-returns.index') }}">Sales Return</a>
                     <a class="tn-link" href="{{ route('retail-pos.index') }}">Retail POS</a>
                     <a class="tn-link" href="{{ route('delivery-notes.index') }}">Delivery Note</a>
@@ -425,6 +429,9 @@
                     <a class="tn-link" href="{{ route('contra-vouchers.index') }}">Contra Voucher</a>
                     <a class="tn-link" href="{{ route('debit-credit-notes.index') }}">Dr / Cr Note</a>
                     <a class="tn-link" href="{{ route('bank-reconciliation.index') }}">Bank Reconciliation</a>
+                    <div class="tn-col-title" style="margin-top:8px">Integrations</div>
+                    <a class="tn-link" href="{{ route('ecom-orders.index') }}">Ecom Orders</a>
+                    <a class="tn-link" href="{{ route('payment-gateway.index') }}">Payment Txns</a>
                     <div class="tn-col-title" style="margin-top:8px">CRM</div>
                     <a class="tn-link" href="{{ route('new-crm-leads.index') }}">Leads</a>
                     <a class="tn-link" href="{{ route('crm-activities.index') }}">Activities</a>
@@ -479,10 +486,10 @@
                     <a class="tn-link" href="{{ route('reorder.index') }}">Reorder Report</a>
                     <div class="tn-col-title" style="margin-top:8px">Analytics</div>
                     <a class="tn-link" href="{{ route('bi-dashboard.index') }}">BI Dashboard</a>
-                    <a class="tn-link" href="{{ route('sales-analytics.index') }}">Sales Analytics</a>
-                    <a class="tn-link" href="{{ route('inventory-report.index') }}">Inventory Report</a>
-                    <a class="tn-link" href="{{ route('ageing-report.index') }}">AR/AP Ageing</a>
-                    <a class="tn-link" href="{{ route('pl-report.index') }}">P&amp;L Report</a>
+                    <a class="tn-link" href="{{ route('reports.sales') }}">Sales Analytics</a>
+                    <a class="tn-link" href="{{ route('reports.inventory') }}">Inventory Report</a>
+                    <a class="tn-link" href="{{ route('reports.ageing') }}">AR Ageing</a>
+                    <a class="tn-link" href="{{ route('reports.pl') }}">P&amp;L Report</a>
                     <a class="tn-link" href="{{ route('report-builder.index') }}">Report Builder</a>
                     <a class="tn-link" href="{{ route('cogs-posting.index') }}">COGS Posting</a>
                 </div>

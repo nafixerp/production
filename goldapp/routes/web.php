@@ -176,7 +176,29 @@ use App\Http\Controllers\PLReportController;
 use App\Http\Controllers\SalesAnalyticsController;
 use App\Http\Controllers\InventoryReportController;
 use App\Http\Controllers\AgeingReportController;
+use App\Http\Controllers\ForecastingController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\APIClientController;
+use App\Http\Controllers\IntegrationSettingsController;
+use App\Http\Controllers\GSTFilingController;
+use App\Http\Controllers\PaymentGatewayController;
+use App\Http\Controllers\CourierController;
+use App\Http\Controllers\EcomChannelController;
+use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\MobileAPIController;
+use App\Http\Controllers\CompanyProfileController;
+use App\Http\Controllers\FinancialYearController;
+use App\Http\Controllers\SequenceConfigController;
+use App\Http\Controllers\EmailTemplateController;
+use App\Http\Controllers\SMSWhatsAppTemplateController;
+use App\Http\Controllers\SystemSettingsController;
+use App\Http\Controllers\BackupController;
+use App\Http\Controllers\NotificationPreferenceController;
+use App\Http\Controllers\AdminDashboardController;
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
@@ -375,12 +397,104 @@ Route::middleware('auth')->group(function () {
     Route::get('sales-analytics',      [SalesAnalyticsController::class,'index'])->name('sales-analytics.index');
     Route::get('inventory-report',     [InventoryReportController::class,'index'])->name('inventory-report.index');
     Route::get('ageing-report',        [AgeingReportController::class,'index'])->name('ageing-report.index');
+
+    // Module 7: Analytics Reports (canonical URLs)
+    Route::get('reports/profit-loss',   [PLReportController::class,'index'])->name('reports.pl');
+    Route::get('reports/sales-analytics',[SalesAnalyticsController::class,'index'])->name('reports.sales');
+    Route::get('reports/inventory',     [InventoryReportController::class,'index'])->name('reports.inventory');
+    Route::get('reports/ageing',        [AgeingReportController::class,'index'])->name('reports.ageing');
+    Route::get('reports/forecasting',   [ForecastingController::class,'index'])->name('reports.forecast');
+
+    // Module 8: User & Role Management
+    Route::resource('admin/users',      UserController::class)->names('users');
+    Route::post('admin/users/{id}/reset-password', [UserController::class,'resetPassword'])->name('users.reset-password');
+    Route::post('admin/users/{id}/impersonate',    [UserController::class,'impersonate'])->name('users.impersonate');
+    Route::resource('admin/roles',      RoleController::class)->names('roles');
+    Route::get('admin/roles/{id}/permissions',    [RoleController::class,'permissions'])->name('roles.permissions');
+    Route::post('admin/roles/{id}/permissions',   [RoleController::class,'savePermissions'])->name('roles.save-permissions');
+    Route::resource('admin/permissions',PermissionController::class)->names('permissions');
+    Route::post('admin/permissions/auto-generate',[PermissionController::class,'autoGenerate'])->name('permissions.auto-generate');
+    Route::get('admin/audit-logs',      [AuditLogController::class,'index'])->name('audit-logs.index');
+    Route::get('admin/audit-logs/{id}', [AuditLogController::class,'show'])->name('audit-logs.show');
+    Route::get('admin/profile',         [ProfileController::class,'edit'])->name('profile.edit');
+    Route::put('admin/profile',         [ProfileController::class,'update'])->name('profile.update');
     Route::resource('api-clients',                 APIClientController::class);
+    Route::get('api-clients/{apiClient}/logs', [APIClientController::class, 'logs'])->name('api-clients.logs');
 
     // MOBILE API (139)
     Route::prefix('api/mobile')->group(function () {
         Route::post('login',      [MobileAppAPIController::class,'login']);
         Route::get('stock/{id}',  [MobileAppAPIController::class,'stockCheck']);
         Route::get('dispatch',    [MobileAppAPIController::class,'dispatchList']);
+    });
+
+    // ── Module 9: Integrations & API ──────────────────────────────────────────
+    Route::get('integrations', [IntegrationSettingsController::class, 'index'])->name('integrations.index');
+    Route::get('integrations/configure/{type}', [IntegrationSettingsController::class, 'configure'])->name('integrations.configure');
+    Route::post('integrations/configure/{type}', [IntegrationSettingsController::class, 'save'])->name('integrations.save');
+    Route::post('integrations/test/{type}', [IntegrationSettingsController::class, 'test'])->name('integrations.test');
+    Route::post('integrations/sync/{type}', [IntegrationSettingsController::class, 'sync'])->name('integrations.sync');
+
+    Route::resource('gst-filings', GSTFilingController::class);
+    Route::post('gst-filings/generate', [GSTFilingController::class, 'generate'])->name('gst-filings.generate');
+    Route::get('gst-filings/{gstFiling}/download', [GSTFilingController::class, 'download'])->name('gst-filings.download');
+
+    Route::resource('einvoices', EinvoiceController::class);
+    Route::post('einvoices/{id}/generate', [EinvoiceController::class, 'generate'])->name('einvoices.generate');
+    Route::post('einvoices/{id}/cancel', [EinvoiceController::class, 'cancelIrn'])->name('einvoices.cancel');
+
+    Route::resource('eway-bills', EwayBillController::class);
+
+    Route::get('payment-gateway', [PaymentGatewayController::class, 'index'])->name('payment-gateway.index');
+    Route::post('payment-gateway/{id}/reconcile', [PaymentGatewayController::class, 'reconcile'])->name('payment-gateway.reconcile');
+
+    Route::resource('couriers', CourierController::class);
+
+    Route::get('ecom-orders', [EcomChannelController::class, 'index'])->name('ecom-orders.index');
+    Route::post('ecom-orders/{ecomChannelOrder}/map-so', [EcomChannelController::class, 'mapToSO'])->name('ecom-orders.map-so');
+    Route::post('ecom-orders/{ecomChannelOrder}/process', [EcomChannelController::class, 'process'])->name('ecom-orders.process');
+
+    // ── Module 10: Settings & Admin ───────────────────────────────────────────
+    Route::get('company-profile', [CompanyProfileController::class, 'index'])->name('company-profile.index');
+    Route::put('company-profile', [CompanyProfileController::class, 'update'])->name('company-profile.update');
+
+    Route::resource('financial-years', FinancialYearController::class);
+    Route::post('financial-years/{id}/lock', [FinancialYearController::class, 'lock'])->name('financial-years.lock');
+    Route::post('financial-years/{id}/set-current', [FinancialYearController::class, 'setCurrent'])->name('financial-years.set-current');
+
+    Route::resource('sequences', SequenceConfigController::class);
+    Route::get('sequences/{sequence}/preview', [SequenceConfigController::class, 'preview'])->name('sequences.preview');
+    Route::post('sequences/{sequence}/reset', [SequenceConfigController::class, 'reset'])->name('sequences.reset');
+
+    Route::resource('email-templates', EmailTemplateController::class);
+    Route::get('email-templates/{emailTemplate}/preview', [EmailTemplateController::class, 'preview'])->name('email-templates.preview');
+
+    Route::resource('sms-templates', SMSWhatsAppTemplateController::class)->parameters(['sms-templates' => 'smsTemplate']);
+
+    Route::get('system-settings', [SystemSettingsController::class, 'index'])->name('system-settings.index');
+    Route::post('system-settings', [SystemSettingsController::class, 'update'])->name('system-settings.update');
+
+    Route::get('backup', [BackupController::class, 'index'])->name('backup.index');
+    Route::post('backup/create', [BackupController::class, 'create'])->name('backup.create');
+    Route::get('backup/{id}/download', [BackupController::class, 'download'])->name('backup.download');
+    Route::post('backup/{id}/restore', [BackupController::class, 'restore'])->name('backup.restore');
+
+    Route::get('notification-prefs', [NotificationPreferenceController::class, 'index'])->name('notification-prefs.index');
+    Route::post('notification-prefs', [NotificationPreferenceController::class, 'update'])->name('notification-prefs.update');
+
+    Route::get('admin-dashboard', [AdminDashboardController::class, 'index'])->name('admin-dashboard.index');
+});
+
+// Webhooks (no auth)
+Route::post('webhooks/{source}', [WebhookController::class, 'receive'])->name('webhooks.receive');
+
+// Mobile API v1 (token auth via Sanctum or session)
+Route::prefix('api/v1')->group(function () {
+    Route::post('auth/login', [MobileAPIController::class, 'login']);
+    Route::middleware('auth')->group(function () {
+        Route::get('dashboard', [MobileAPIController::class, 'dashboard']);
+        Route::get('stock/{item_id}', [MobileAPIController::class, 'stockCheck']);
+        Route::get('sales-orders', [MobileAPIController::class, 'salesOrders']);
+        Route::post('dispatch/{id}/confirm', [MobileAPIController::class, 'confirmDispatch']);
     });
 });
