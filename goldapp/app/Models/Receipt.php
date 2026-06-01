@@ -4,6 +4,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Receipt extends Model {
     protected $table = 'receipt';
-    protected $fillable = ['slno','vchno','vchdate','party_id','party_name','amount','discount','payment_mode','bank_account_id','cheque_no','cheque_date','bank_name','narration','status','created_by'];
+    protected $fillable = ['slno','vch_no','vch_date','party_id','party_name','amount','discount','payment_mode','bank_account_id','cheque_no','cheque_date','bank_name','narration','status','branch_id','created_by'];
     public function party() { return $this->belongsTo(Account::class, 'party_id'); }
 }

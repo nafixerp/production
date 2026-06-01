@@ -3,6 +3,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\Payment;
+use App\Models\Daybook;
+use App\Models\DaybookPart;
 use App\Services\DaybookService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,43 +24,43 @@ class PaymentController extends Controller
         $q        = $request->q;
         $from     = $request->from;
         $to       = $request->to;
-        $payments = Payment::when($q, fn($qry) => $qry->where('party_name','like',"%$q%")->orWhere('vchno','like',"%$q%"))
-            ->when($from, fn($qry) => $qry->where('vchdate','>=',$from))
-            ->when($to,   fn($qry) => $qry->where('vchdate','<=',$to))
-            ->orderBy('vchdate','desc')->orderBy('id','desc')
+        $payments = Payment::when($q, fn($qry) => $qry->where('party_name', 'like', "%$q%")->orWhere('vch_no', 'like', "%$q%"))
+            ->when($from, fn($qry) => $qry->where('vch_date', '>=', $from))
+            ->when($to,   fn($qry) => $qry->where('vch_date', '<=', $to))
+            ->orderBy('vch_date', 'desc')->orderBy('id', 'desc')
             ->paginate(20)->withQueryString();
-        return view('payment.index', compact('payments','q','from','to'));
+        return view('payment.index', compact('payments', 'q', 'from', 'to'));
     }
 
     public function create()
     {
-        $parties      = Account::whereIn('atype',['customer','supplier'])->orderBy('name')->get();
-        $bankAccounts = Account::where('atype','bank')->orderBy('name')->get();
+        $parties      = Account::whereIn('atype', ['CUSTOMER', 'SUPPLIER'])->orderBy('name')->get();
+        $bankAccounts = Account::where('atype', 'BANK')->orderBy('name')->get();
         $nextSlno     = $this->daybookService->nextSlno('PV', 'payment');
-        return view('payment.create', compact('parties','bankAccounts','nextSlno'));
+        return view('payment.create', compact('parties', 'bankAccounts', 'nextSlno'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
             'party_id' => 'required|exists:account,id',
-            'vchdate'  => 'required|date',
+            'vch_date' => 'required|date',
             'amount'   => 'required|numeric|min:0.01',
         ]);
 
         DB::transaction(function () use ($request) {
             $slno  = $this->daybookService->nextSlno('PV', 'payment');
-            $party = Account::find($request->party_id);
+            $party = Account::findOrFail($request->party_id);
 
             $payment = Payment::create([
                 'slno'            => $slno,
-                'vchno'           => $slno,
-                'vchdate'         => $request->vchdate,
+                'vch_no'          => $slno,
+                'vch_date'        => $request->vch_date,
                 'party_id'        => $request->party_id,
                 'party_name'      => $party->name,
                 'amount'          => $request->amount,
                 'payment_mode'    => $request->payment_mode ?? 'cash',
-                'bank_account_id' => $request->bank_account_id ?? null,
+                'bank_account_id' => $request->bank_account_id ?: null,
                 'cheque_no'       => $request->cheque_no,
                 'cheque_date'     => $request->cheque_date ?: null,
                 'bank_name'       => $request->bank_name,
@@ -70,21 +72,59 @@ class PaymentController extends Controller
             $this->daybookService->insertPaymentDaybookEntries($payment);
         });
 
-        return redirect()->route('payment.index')->with('success','Payment voucher saved.');
+        return redirect()->route('payments.index')->with('success', 'Payment voucher saved.');
     }
 
     public function show(Payment $payment)
     {
-        return view('payment.show', compact('payment'));
+        $daybookEntries = Daybook::where('slno', $payment->slno)->get();
+        return view('payment.show', compact('payment', 'daybookEntries'));
+    }
+
+    public function edit(Payment $payment)
+    {
+        $parties      = Account::whereIn('atype', ['CUSTOMER', 'SUPPLIER'])->orderBy('name')->get();
+        $bankAccounts = Account::where('atype', 'BANK')->orderBy('name')->get();
+        return view('payment.edit', compact('payment', 'parties', 'bankAccounts'));
+    }
+
+    public function update(Request $request, Payment $payment)
+    {
+        $request->validate([
+            'party_id' => 'required|exists:account,id',
+            'vch_date' => 'required|date',
+            'amount'   => 'required|numeric|min:0.01',
+        ]);
+
+        DB::transaction(function () use ($request, $payment) {
+            $party = Account::findOrFail($request->party_id);
+
+            $payment->update([
+                'vch_date'        => $request->vch_date,
+                'party_id'        => $request->party_id,
+                'party_name'      => $party->name,
+                'amount'          => $request->amount,
+                'payment_mode'    => $request->payment_mode ?? 'cash',
+                'bank_account_id' => $request->bank_account_id ?: null,
+                'cheque_no'       => $request->cheque_no,
+                'cheque_date'     => $request->cheque_date ?: null,
+                'bank_name'       => $request->bank_name,
+                'narration'       => $request->narration,
+            ]);
+
+            $this->daybookService->insertPaymentDaybookEntries($payment);
+        });
+
+        return redirect()->route('payments.index')->with('success', 'Payment updated.');
     }
 
     public function destroy(Payment $payment)
     {
         DB::transaction(function () use ($payment) {
-            \App\Models\Daybook::where('slno', $payment->slno)->delete();
-            \App\Models\Daybookpart::where('slno', $payment->slno)->delete();
+            Daybook::where('slno', $payment->slno)->delete();
+            DaybookPart::where('slno', $payment->slno)->delete();
             $payment->delete();
         });
-        return redirect()->route('payment.index')->with('success','Payment deleted.');
+        return redirect()->route('payments.index')->with('success', 'Payment deleted.');
     }
 }

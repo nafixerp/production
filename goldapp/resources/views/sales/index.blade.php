@@ -1,18 +1,18 @@
 @extends('layouts.app')
-@section('title','Sales Bills')
-@section('page-title','Sales Bills')
+@section('title','Sales Invoices')
+@section('page-title','Sales Invoices')
 
 @section('content')
 <div class="card-gold">
     <div class="card-header-gold">
-        <h5>◆ Sales Bills</h5>
-        <a href="{{ route('sales.create') }}" class="btn-gold">+ New Bill</a>
+        <h5>◆ Sales Invoices</h5>
+        <a href="{{ route('sales.create') }}" class="btn-gold">+ New Invoice</a>
     </div>
 
     <form method="GET" class="mb-3 d-flex flex-wrap gap-2 align-items-end">
         <div>
             <label class="form-label">Search</label>
-            <input type="text" name="q" value="{{ $q }}" class="form-control" style="width:200px" placeholder="Bill no / customer...">
+            <input type="text" name="q" value="{{ $q }}" class="form-control" style="width:200px" placeholder="Invoice no / customer...">
         </div>
         <div>
             <label class="form-label">From</label>
@@ -22,8 +22,8 @@
             <label class="form-label">To</label>
             <input type="date" name="to" value="{{ $to }}" class="form-control" style="width:155px">
         </div>
-        <button class="btn-outline-gold" style="margin-bottom:1px">Filter</button>
-        <a href="{{ route('sales.index') }}" class="btn-outline-gold" style="margin-bottom:1px">Clear</a>
+        <button class="btn-outline-gold">Filter</button>
+        <a href="{{ route('sales.index') }}" class="btn-outline-gold">Clear</a>
     </form>
 
     <div class="table-responsive">
@@ -31,45 +31,54 @@
         <thead>
             <tr>
                 <th>#</th>
-                <th>Bill No</th>
+                <th>Invoice No</th>
                 <th>Date</th>
                 <th>Customer</th>
-                <th class="text-end">Gross</th>
-                <th class="text-end">Discount</th>
+                <th class="text-end">Taxable</th>
                 <th class="text-end">GST</th>
                 <th class="text-end">Net Amount</th>
                 <th class="text-end">Received</th>
                 <th>Mode</th>
+                <th>Status</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            @forelse($bills as $b)
+        @forelse($invoices as $inv)
             <tr>
-                <td>{{ $bills->firstItem() + $loop->index }}</td>
-                <td><a href="{{ route('sales.show',$b->id) }}" class="text-gold">{{ $b->billno }}</a></td>
-                <td>{{ $b->billdate }}</td>
-                <td>{{ Str::limit($b->customer_name,22) }}</td>
-                <td class="text-end">{{ number_format($b->gross_amount,2) }}</td>
-                <td class="text-end text-debit">{{ $b->discount > 0 ? number_format($b->discount,2) : '-' }}</td>
-                <td class="text-end">{{ number_format($b->sgst+$b->cgst+$b->igst,2) }}</td>
-                <td class="text-end text-credit fw-bold">₹{{ number_format($b->net_amount,2) }}</td>
-                <td class="text-end">{{ $b->received_amount > 0 ? number_format($b->received_amount,2) : '-' }}</td>
-                <td><span class="badge-gold">{{ strtoupper($b->payment_mode) }}</span></td>
+                <td>{{ $loop->iteration }}</td>
+                <td>{{ $inv->invoice_no }}</td>
+                <td>{{ $inv->invoice_date }}</td>
+                <td>{{ $inv->customer_name }}</td>
+                <td class="text-end">{{ number_format($inv->taxable_amount, 2) }}</td>
+                <td class="text-end">{{ number_format($inv->sgst + $inv->cgst + $inv->igst, 2) }}</td>
+                <td class="text-end text-gold">{{ number_format($inv->net_amount, 2) }}</td>
+                <td class="text-end text-credit">{{ number_format($inv->received_amount, 2) }}</td>
+                <td>{{ strtoupper($inv->payment_mode) }}</td>
                 <td>
-                    <a href="{{ route('sales.show',$b->id) }}" class="btn-outline-gold btn-sm-gold">View</a>
-                    <form method="POST" action="{{ route('sales.destroy',$b->id) }}" style="display:inline" onsubmit="return confirm('Delete this bill?')">
+                    @if($inv->status)
+                        <span class="badge-gold">Active</span>
+                    @else
+                        <span style="color:#f87171;font-size:0.75rem">Cancelled</span>
+                    @endif
+                </td>
+                <td>
+                    <a href="{{ route('sales.show', $inv) }}" class="btn-outline-gold btn-sm-gold">View</a>
+                    <a href="{{ route('sales.edit', $inv) }}" class="btn-outline-gold btn-sm-gold">Edit</a>
+                    @if($inv->status)
+                    <form method="POST" action="{{ route('sales.destroy', $inv) }}" style="display:inline" onsubmit="return confirm('Cancel this invoice?')">
                         @csrf @method('DELETE')
-                        <button class="btn-outline-gold btn-sm-gold" style="color:#f87171;border-color:rgba(248,113,113,0.4)">Del</button>
+                        <button type="submit" class="btn-outline-gold btn-sm-gold" style="color:#f87171;border-color:#f87171">Cancel</button>
                     </form>
+                    @endif
                 </td>
             </tr>
-            @empty
-            <tr><td colspan="11" class="text-center" style="padding:24px;color:var(--text-muted-gold)">No sales bills found.</td></tr>
-            @endforelse
+        @empty
+            <tr><td colspan="11" class="text-center" style="color:#666;padding:20px">No sales invoices found.</td></tr>
+        @endforelse
         </tbody>
     </table>
     </div>
-    <div class="mt-3">{{ $bills->links() }}</div>
+    <div class="mt-3">{{ $invoices->links() }}</div>
 </div>
 @endsection

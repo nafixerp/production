@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Gold Plus ERP') | Gold Plus ERP</title>
+    <title>@yield('title', 'Food Production ERP') | Food Production ERP</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
@@ -366,8 +366,8 @@
 <nav id="sidebar">
     <div class="brand">
         <div class="diamond-row">◇ ✦ ◇</div>
-        <h4>GOLD PLUS</h4>
-        <small>JEWELLERY ERP SYSTEM</small>
+        <h4>FOOD ERP</h4>
+        <small>FOOD PRODUCTION ERP SYSTEM</small>
     </div>
     <div style="overflow-y:auto; flex:1; padding-bottom:20px;">
 
@@ -386,30 +386,34 @@
         </div>
 
         <div class="nav-section">
-            <div class="nav-label">Transactions</div>
+            <div class="nav-label">Sales</div>
             <a href="{{ route('sales.index') }}" class="nav-link {{ request()->routeIs('sales.*') ? 'active' : '' }}">
-                <span class="diamond">◇</span> <span>Sales Bills</span>
+                <span class="diamond">◇</span> <span>Sales Invoices</span>
             </a>
-            <a href="{{ route('purchase.index') }}" class="nav-link {{ request()->routeIs('purchase.*') ? 'active' : '' }}">
-                <span class="diamond">◇</span> <span>Purchase Bills</span>
-            </a>
-            <a href="{{ route('receipt.index') }}" class="nav-link {{ request()->routeIs('receipt.*') ? 'active' : '' }}">
+            <a href="{{ route('receipts.index') }}" class="nav-link {{ request()->routeIs('receipts.*') ? 'active' : '' }}">
                 <span class="diamond">◇</span> <span>Receipts</span>
             </a>
-            <a href="{{ route('payment.index') }}" class="nav-link {{ request()->routeIs('payment.*') ? 'active' : '' }}">
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-label">Purchase</div>
+            <a href="{{ route('purchase.index') }}" class="nav-link {{ request()->routeIs('purchase.*') ? 'active' : '' }}">
+                <span class="diamond">◇</span> <span>Purchase Invoices</span>
+            </a>
+            <a href="{{ route('payments.index') }}" class="nav-link {{ request()->routeIs('payments.*') ? 'active' : '' }}">
                 <span class="diamond">◇</span> <span>Payments</span>
             </a>
         </div>
 
         <div class="nav-section">
-            <div class="nav-label">Accounts Book</div>
-            <a href="{{ route('daybook.index') }}" class="nav-link {{ request()->routeIs('daybook.*') ? 'active' : '' }}">
+            <div class="nav-label">Accounts</div>
+            <a href="{{ route('daybook.index') }}" class="nav-link {{ request()->routeIs('daybook.index') ? 'active' : '' }}">
                 <span class="diamond">◇</span> <span>Daybook</span>
             </a>
-            <a href="{{ route('reports.ledger') }}" class="nav-link {{ request()->routeIs('reports.ledger') ? 'active' : '' }}">
+            <a href="{{ route('daybook.ledger') }}" class="nav-link {{ request()->routeIs('daybook.ledger') ? 'active' : '' }}">
                 <span class="diamond">◇</span> <span>Ledger</span>
             </a>
-            <a href="{{ route('reports.trial_balance') }}" class="nav-link {{ request()->routeIs('reports.trial_balance') ? 'active' : '' }}">
+            <a href="{{ route('daybook.trial') }}" class="nav-link {{ request()->routeIs('daybook.trial') ? 'active' : '' }}">
                 <span class="diamond">◇</span> <span>Trial Balance</span>
             </a>
         </div>

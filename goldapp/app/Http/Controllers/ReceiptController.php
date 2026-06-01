@@ -3,6 +3,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\Receipt;
+use App\Models\Daybook;
+use App\Models\DaybookPart;
 use App\Services\DaybookService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,44 +24,44 @@ class ReceiptController extends Controller
         $q        = $request->q;
         $from     = $request->from;
         $to       = $request->to;
-        $receipts = Receipt::when($q, fn($qry) => $qry->where('party_name','like',"%$q%")->orWhere('vchno','like',"%$q%"))
-            ->when($from, fn($qry) => $qry->where('vchdate','>=',$from))
-            ->when($to,   fn($qry) => $qry->where('vchdate','<=',$to))
-            ->orderBy('vchdate','desc')->orderBy('id','desc')
+        $receipts = Receipt::when($q, fn($qry) => $qry->where('party_name', 'like', "%$q%")->orWhere('vch_no', 'like', "%$q%"))
+            ->when($from, fn($qry) => $qry->where('vch_date', '>=', $from))
+            ->when($to,   fn($qry) => $qry->where('vch_date', '<=', $to))
+            ->orderBy('vch_date', 'desc')->orderBy('id', 'desc')
             ->paginate(20)->withQueryString();
-        return view('receipt.index', compact('receipts','q','from','to'));
+        return view('receipt.index', compact('receipts', 'q', 'from', 'to'));
     }
 
     public function create()
     {
-        $parties      = Account::whereIn('atype',['customer','supplier'])->orderBy('name')->get();
-        $bankAccounts = Account::where('atype','bank')->orderBy('name')->get();
+        $parties      = Account::whereIn('atype', ['CUSTOMER', 'SUPPLIER'])->orderBy('name')->get();
+        $bankAccounts = Account::where('atype', 'BANK')->orderBy('name')->get();
         $nextSlno     = $this->daybookService->nextSlno('RV', 'receipt');
-        return view('receipt.create', compact('parties','bankAccounts','nextSlno'));
+        return view('receipt.create', compact('parties', 'bankAccounts', 'nextSlno'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'party_id'  => 'required|exists:account,id',
-            'vchdate'   => 'required|date',
-            'amount'    => 'required|numeric|min:0.01',
+            'party_id' => 'required|exists:account,id',
+            'vch_date' => 'required|date',
+            'amount'   => 'required|numeric|min:0.01',
         ]);
 
         DB::transaction(function () use ($request) {
             $slno  = $this->daybookService->nextSlno('RV', 'receipt');
-            $party = Account::find($request->party_id);
+            $party = Account::findOrFail($request->party_id);
 
             $receipt = Receipt::create([
                 'slno'            => $slno,
-                'vchno'           => $slno,
-                'vchdate'         => $request->vchdate,
+                'vch_no'          => $slno,
+                'vch_date'        => $request->vch_date,
                 'party_id'        => $request->party_id,
                 'party_name'      => $party->name,
                 'amount'          => $request->amount,
                 'discount'        => $request->discount ?? 0,
                 'payment_mode'    => $request->payment_mode ?? 'cash',
-                'bank_account_id' => $request->bank_account_id ?? null,
+                'bank_account_id' => $request->bank_account_id ?: null,
                 'cheque_no'       => $request->cheque_no,
                 'cheque_date'     => $request->cheque_date ?: null,
                 'bank_name'       => $request->bank_name,
@@ -71,21 +73,60 @@ class ReceiptController extends Controller
             $this->daybookService->insertReceiptDaybookEntries($receipt);
         });
 
-        return redirect()->route('receipt.index')->with('success','Receipt voucher saved.');
+        return redirect()->route('receipts.index')->with('success', 'Receipt voucher saved.');
     }
 
     public function show(Receipt $receipt)
     {
-        return view('receipt.show', compact('receipt'));
+        $daybookEntries = Daybook::where('slno', $receipt->slno)->get();
+        return view('receipt.show', compact('receipt', 'daybookEntries'));
+    }
+
+    public function edit(Receipt $receipt)
+    {
+        $parties      = Account::whereIn('atype', ['CUSTOMER', 'SUPPLIER'])->orderBy('name')->get();
+        $bankAccounts = Account::where('atype', 'BANK')->orderBy('name')->get();
+        return view('receipt.edit', compact('receipt', 'parties', 'bankAccounts'));
+    }
+
+    public function update(Request $request, Receipt $receipt)
+    {
+        $request->validate([
+            'party_id' => 'required|exists:account,id',
+            'vch_date' => 'required|date',
+            'amount'   => 'required|numeric|min:0.01',
+        ]);
+
+        DB::transaction(function () use ($request, $receipt) {
+            $party = Account::findOrFail($request->party_id);
+
+            $receipt->update([
+                'vch_date'        => $request->vch_date,
+                'party_id'        => $request->party_id,
+                'party_name'      => $party->name,
+                'amount'          => $request->amount,
+                'discount'        => $request->discount ?? 0,
+                'payment_mode'    => $request->payment_mode ?? 'cash',
+                'bank_account_id' => $request->bank_account_id ?: null,
+                'cheque_no'       => $request->cheque_no,
+                'cheque_date'     => $request->cheque_date ?: null,
+                'bank_name'       => $request->bank_name,
+                'narration'       => $request->narration,
+            ]);
+
+            $this->daybookService->insertReceiptDaybookEntries($receipt);
+        });
+
+        return redirect()->route('receipts.index')->with('success', 'Receipt updated.');
     }
 
     public function destroy(Receipt $receipt)
     {
         DB::transaction(function () use ($receipt) {
-            \App\Models\Daybook::where('slno', $receipt->slno)->delete();
-            \App\Models\Daybookpart::where('slno', $receipt->slno)->delete();
+            Daybook::where('slno', $receipt->slno)->delete();
+            DaybookPart::where('slno', $receipt->slno)->delete();
             $receipt->delete();
         });
-        return redirect()->route('receipt.index')->with('success','Receipt deleted.');
+        return redirect()->route('receipts.index')->with('success', 'Receipt deleted.');
     }
 }

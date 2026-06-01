@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gold Plus ERP - Login</title>
+    <title>Food Production ERP - Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         :root {
@@ -165,7 +165,7 @@
         <div class="brand-row">
             <div class="brand-diamonds">◇ ✦ ◆ ✦ ◇</div>
             <h1 class="brand-title">GOLD PLUS</h1>
-            <div class="brand-sub">Jewellery ERP System</div>
+            <div class="brand-sub">Food Production ERP System</div>
         </div>
         <hr class="divider-gold">
 
@@ -191,7 +191,7 @@
             <button type="submit" class="btn-login">◆ Sign In ◆</button>
         </form>
 
-        <div class="footer-text">◇ Gold Plus ERP v1.0 ◇</div>
+        <div class="footer-text">◇ Food Production ERP v1.0 ◇</div>
     </div>
 </div>
 </body>
