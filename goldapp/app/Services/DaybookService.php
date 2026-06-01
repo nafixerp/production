@@ -364,4 +364,121 @@ class DaybookService
         $seq = $last ? (int) substr($last, -4) + 1 : 1;
         return sprintf('%s/%s/%04d', $prefix, $ym, $seq);
     }
+
+    /**
+     * NEW PURCHASE INVOICE (purchase_invoices table) daybook entries
+     */
+    public function insertNewPurchaseInvoiceDaybookEntries(\App\Models\PurchaseInvoiceNew $inv): void
+    {
+        $slno   = $inv->slno;
+        $date   = $inv->invoice_date instanceof \Carbon\Carbon ? $inv->invoice_date->format('Y-m-d') : $inv->invoice_date;
+        $vtype  = 'PI';
+        $branch = $inv->branch_id;
+        $ref    = "Purchase Invoice {$inv->slno} - {$inv->supplier_name}";
+
+        Daybook::where('slno', $slno)->delete();
+        DaybookPart::where('slno', $slno)->delete();
+
+        DaybookPart::create([
+            'slno'       => $slno,
+            'vchno'      => $inv->slno,
+            'particular' => $ref,
+            'tdate'      => $date,
+            'vtype'      => $vtype,
+            'branch_id'  => $branch,
+            'created_by' => auth()->id(),
+        ]);
+
+        // Try to get account by supplier code from suppliers table, fallback to EP
+        $purchaseAcc = $this->tryGetAccount('EP', 'EP');
+        $sgstAcc     = $this->tryGetAccount('SGST-IN', 'SGST');
+        $cgstAcc     = $this->tryGetAccount('CGST-IN', 'CGST');
+        $igstAcc     = $this->tryGetAccount('IGST-IN', 'IGST');
+        $discAcc     = $this->tryGetAccount('DISC', 'DISC');
+        $tcsAcc      = $this->tryGetAccount('TCS', 'TCS');
+        $supplierAcc = Account::where('atype', 'SUPPLIER')->where('id', $inv->supplier_id)->first()
+            ?? $this->tryGetAccount('AP-DEFAULT', 'SUPP-DEFAULT');
+
+        // 1. Debit purchases
+        $this->insertLine($slno, $purchaseAcc, -$inv->taxable_amount, "Purchase {$inv->slno}", $date, $vtype, $branch);
+        // 2. Debit input GST
+        if ($inv->sgst > 0) $this->insertLine($slno, $sgstAcc, -$inv->sgst, "Input SGST", $date, $vtype, $branch);
+        if ($inv->cgst > 0) $this->insertLine($slno, $cgstAcc, -$inv->cgst, "Input CGST", $date, $vtype, $branch);
+        if ($inv->igst > 0) $this->insertLine($slno, $igstAcc, -$inv->igst, "Input IGST", $date, $vtype, $branch);
+        // 3. Credit supplier for net amount
+        $this->insertLine($slno, $supplierAcc, $inv->net_amount, "Supplier {$inv->supplier_name}", $date, $vtype, $branch);
+        // 4. Credit discount
+        if ($inv->discount > 0) $this->insertLine($slno, $discAcc, $inv->discount, "Discount received", $date, $vtype, $branch);
+        // 5. Debit TCS
+        if ($inv->tcs > 0) $this->insertLine($slno, $tcsAcc, -$inv->tcs, "TCS", $date, $vtype, $branch);
+        // 6. If paid now
+        if ($inv->paid_amount > 0) {
+            $this->insertLine($slno, $supplierAcc, -$inv->paid_amount, "Payment {$inv->slno}", $date, $vtype, $branch);
+            $cashBankAcc = $inv->payment_mode === 'cash'
+                ? $this->tryGetAccount('CASH', 'CASH')
+                : ($inv->bank_account_id ? Account::find($inv->bank_account_id) : $this->tryGetAccount('BANK', 'BANK'));
+            if ($cashBankAcc) $this->insertLine($slno, $cashBankAcc, $inv->paid_amount, "Cash/Bank Payment", $date, $vtype, $branch);
+        }
+        $this->addRoundEntry($slno, $date, $vtype, $branch);
+    }
+
+    /**
+     * MATERIAL ISSUE TO PRODUCTION daybook entries
+     * WIP account  -total_cost  (Debit WIP)
+     * RM-STOCK     +total_cost  (Credit RM Stock)
+     */
+    public function insertMaterialIssueDaybookEntries(string $slno, float $totalCost, string $date, ?int $branchId, string $ref): void
+    {
+        Daybook::where('slno', $slno)->delete();
+        DaybookPart::where('slno', $slno)->delete();
+
+        DaybookPart::create([
+            'slno' => $slno, 'vchno' => $slno, 'particular' => $ref,
+            'tdate' => $date, 'vtype' => 'MI', 'branch_id' => $branchId, 'created_by' => auth()->id()
+        ]);
+
+        $wipAcc  = $this->tryGetAccount('WIP', 'WIP');
+        $rmAcc   = $this->tryGetAccount('RM-STOCK', 'RM-STOCK');
+        $this->insertLine($slno, $wipAcc, -$totalCost, $ref, $date, 'MI', $branchId);
+        $this->insertLine($slno, $rmAcc, $totalCost, $ref, $date, 'MI', $branchId);
+        $this->addRoundEntry($slno, $date, 'MI', $branchId);
+    }
+
+    /**
+     * FG RECEIPT FROM PRODUCTION daybook entries
+     * FG-STOCK    -total_cost  (Debit FG Stock)
+     * WIP         +total_cost  (Credit WIP)
+     */
+    public function insertFGReceiptDaybookEntries(string $slno, float $totalCost, string $date, ?int $branchId, string $ref): void
+    {
+        Daybook::where('slno', $slno)->delete();
+        DaybookPart::where('slno', $slno)->delete();
+
+        DaybookPart::create([
+            'slno' => $slno, 'vchno' => $slno, 'particular' => $ref,
+            'tdate' => $date, 'vtype' => 'FGR', 'branch_id' => $branchId, 'created_by' => auth()->id()
+        ]);
+
+        $fgAcc  = $this->tryGetAccount('FG-STOCK', 'FG-STOCK');
+        $wipAcc = $this->tryGetAccount('WIP', 'WIP');
+        $this->insertLine($slno, $fgAcc, -$totalCost, $ref, $date, 'FGR', $branchId);
+        $this->insertLine($slno, $wipAcc, $totalCost, $ref, $date, 'FGR', $branchId);
+        $this->addRoundEntry($slno, $date, 'FGR', $branchId);
+    }
+
+    /**
+     * Try multiple account codes, return first found
+     */
+    private function tryGetAccount(string ...$codes): ?Account
+    {
+        foreach ($codes as $code) {
+            $acc = Account::where('code', $code)->where('status', 1)->first();
+            if ($acc) return $acc;
+        }
+        // Create a placeholder account if none found
+        return Account::firstOrCreate(
+            ['code' => $codes[0]],
+            ['name' => $codes[0], 'atype' => 'LEDGER', 'status' => 1, 'group_id' => 1]
+        );
+    }
 }
