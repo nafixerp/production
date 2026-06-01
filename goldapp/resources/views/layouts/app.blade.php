@@ -81,6 +81,19 @@
         .items-table td{padding:5px 8px}
         .items-table input,.items-table select{font-size:.8rem;padding:3px 7px}
         @media(max-width:768px){#sidebar{transform:translateX(-100%)}#topbar,#main-content{margin-left:0}#sidebar.open{transform:translateX(0)}}
+        /* Module 5 & 6 shared styles */
+        .card-dark{background:#13132a;border:1px solid var(--border-gold);border-radius:8px;padding:14px}
+        .table-dark-erp{--bs-table-bg:transparent;--bs-table-border-color:rgba(212,175,55,.12);color:#e0d8b8;font-size:.82rem}
+        .table-dark-erp thead th{background:rgba(212,175,55,.08);color:var(--gold);font-size:.7rem;text-transform:uppercase;letter-spacing:.8px;border-color:rgba(212,175,55,.2);padding:8px 10px}
+        .table-dark-erp td{border-color:rgba(212,175,55,.08);padding:6px 10px;vertical-align:middle}
+        .table-dark-erp tbody tr:hover{background:rgba(212,175,55,.04)}
+        .table-dark-erp tfoot td{border-top:2px solid rgba(212,175,55,.3);font-weight:600}
+        .nav-tabs .nav-link{color:rgba(212,175,55,.6);border-color:transparent;font-size:.82rem}
+        .nav-tabs .nav-link.active{color:var(--gold);background:rgba(212,175,55,.08);border-color:var(--border-gold) var(--border-gold) transparent}
+        .nav-tabs{border-bottom-color:var(--border-gold)}
+        .alert-sm{padding:8px 14px;font-size:.82rem}
+        .text-gold-link{color:var(--gold);text-decoration:none}.text-gold-link:hover{color:var(--gold-light)}
+        .btn-xs{padding:2px 6px;font-size:.7rem;line-height:1.4}
     </style>
     @stack('styles')
 </head>
