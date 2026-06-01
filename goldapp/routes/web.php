@@ -556,6 +556,43 @@ Route::middleware('auth')->group(function () {
 
     Route::get('production-costing-new', [\App\Http\Controllers\NewProductionCostingController::class, 'index'])
         ->name('production-costing-new.index');
+
+    // ============================================================
+    // MODULE 5: Customer Data & CRM
+    // ============================================================
+    Route::resource('customers', \App\Http\Controllers\CustomerController::class);
+    Route::resource('crm-leads', \App\Http\Controllers\CRMLeadController::class);
+    Route::post('crm-leads/{id}/convert', [\App\Http\Controllers\CRMLeadController::class, 'convert'])->name('crm-leads.convert');
+    // crm-activities already exist above but point to new controller now
+    Route::resource('crm-opportunities', \App\Http\Controllers\CRMOpportunityController::class);
+    // customer-complaints already declared above
+    Route::resource('customer-pricing', \App\Http\Controllers\CustomerPricingController::class);
+    Route::get('customer-pricing-effective', [\App\Http\Controllers\CustomerPricingController::class, 'effectivePrice'])->name('customer-pricing.effective');
+    Route::get('crm-dashboard', [\App\Http\Controllers\CRMDashboardController::class, 'index'])->name('crm-dashboard.index');
+    Route::post('customer-complaints/{id}/escalate', [\App\Http\Controllers\CustomerComplaintController::class, 'escalate'])->name('customer-complaints.escalate');
+    Route::post('customer-complaints/{id}/resolve', [\App\Http\Controllers\CustomerComplaintController::class, 'resolve'])->name('customer-complaints.resolve');
+
+    // ============================================================
+    // MODULE 6: Finance & Accounting
+    // ============================================================
+    Route::resource('chart-of-accounts', \App\Http\Controllers\ChartOfAccountsController::class);
+    // journal-vouchers resource already declared above (replaced stub)
+    Route::post('journal-vouchers/{id}/approve', [\App\Http\Controllers\JournalVoucherController::class, 'approve'])->name('journal-vouchers.approve');
+    Route::post('journal-vouchers/{id}/post', [\App\Http\Controllers\JournalVoucherController::class, 'post'])->name('journal-vouchers.post');
+    // bank-reconciliation resource already declared above (replaced stub)
+    Route::get('finance/trial-balance', [\App\Http\Controllers\TrialBalanceController::class, 'index'])->name('finance.trial-balance.index');
+    Route::get('finance/profit-loss', [\App\Http\Controllers\ProfitLossController::class, 'index'])->name('finance.profit-loss.index');
+    Route::get('finance/balance-sheet', [\App\Http\Controllers\BalanceSheetController::class, 'index'])->name('finance.balance-sheet.index');
+    Route::get('finance/general-ledger', [\App\Http\Controllers\GeneralLedgerController::class, 'index'])->name('finance.general-ledger.index');
+    Route::get('finance/cash-book', [\App\Http\Controllers\CashBookController::class, 'index'])->name('finance.cash-book.index');
+    Route::get('finance/bank-book', [\App\Http\Controllers\BankBookController::class, 'index'])->name('finance.bank-book.index');
+    Route::resource('cost-centres', \App\Http\Controllers\CostCentreController::class);
+    Route::resource('budgets', \App\Http\Controllers\BudgetController::class);
+    Route::get('payment-schedule', [\App\Http\Controllers\PaymentScheduleController::class, 'index'])->name('payment-schedule.index');
+    Route::get('finance/gst-register', [\App\Http\Controllers\GSTRegisterController::class, 'index'])->name('finance.gst-register.index');
+    Route::get('finance/gstr1', [\App\Http\Controllers\GSTRegisterController::class, 'gstr1'])->name('finance.gstr1.index');
+    Route::get('finance/gstr3b', [\App\Http\Controllers\GSTRegisterController::class, 'gstr3b'])->name('finance.gstr3b.index');
+    Route::get('finance/gst-purchase', [\App\Http\Controllers\GSTRegisterController::class, 'purchase'])->name('finance.gst-purchase.index');
 });
 
 // Webhooks (no auth)
