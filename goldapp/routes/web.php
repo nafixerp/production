@@ -560,7 +560,16 @@ Route::middleware('auth')->group(function () {
     // ============================================================
     // MODULE 5: Customer Data & CRM
     // ============================================================
-    Route::resource('customers', \App\Http\Controllers\CustomerController::class);
+    // Override the stub CustomerMasterController with full CRM CustomerController
+    Route::resource('customers', \App\Http\Controllers\CustomerController::class)->names([
+        'index'   => 'customers.index',
+        'create'  => 'customers.create',
+        'store'   => 'customers.store',
+        'show'    => 'customers.show',
+        'edit'    => 'customers.edit',
+        'update'  => 'customers.update',
+        'destroy' => 'customers.destroy',
+    ]);
     Route::resource('crm-leads', \App\Http\Controllers\CRMLeadController::class);
     Route::post('crm-leads/{id}/convert', [\App\Http\Controllers\CRMLeadController::class, 'convert'])->name('crm-leads.convert');
     // crm-activities already exist above but point to new controller now
