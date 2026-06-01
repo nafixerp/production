@@ -130,16 +130,17 @@
         </div>
 
         {{-- PURCHASE --}}
-        <button class="nav-group-btn" type="button" data-bs-toggle="collapse" data-bs-target="#menu-purchase" aria-expanded="{{ request()->routeIs('purchase-*','grn.*','rm-qc.*','vendor-*','contract-*') ? 'true' : 'false' }}">
+        <button class="nav-group-btn" type="button" data-bs-toggle="collapse" data-bs-target="#menu-purchase" aria-expanded="{{ request()->routeIs('purchase-*','grn.*','new-grn.*','new-purchase-*','rm-qc.*','vendor-*','contract-*','suppliers.*') ? 'true' : 'false' }}">
             <span><i class="bi bi-cart3 me-1"></i> Purchase</span><span class="arrow">▶</span>
         </button>
-        <div class="collapse nav-sub {{ request()->routeIs('purchase-*','grn.*','rm-qc.*','vendor-*','contract-*') ? 'show' : '' }}" id="menu-purchase">
+        <div class="collapse nav-sub {{ request()->routeIs('purchase-*','grn.*','new-grn.*','new-purchase-*','rm-qc.*','vendor-*','contract-*','suppliers.*') ? 'show' : '' }}" id="menu-purchase">
+            <a href="{{ route('suppliers.index') }}" class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}"><span class="dot"></span> Suppliers</a>
             <a href="{{ route('purchase-requisitions.index') }}" class="nav-link"><span class="dot"></span> Requisition</a>
             <a href="{{ route('purchase-rfq.index') }}" class="nav-link"><span class="dot"></span> RFQ</a>
-            <a href="{{ route('purchase-orders.index') }}" class="nav-link"><span class="dot"></span> Purchase Order</a>
-            <a href="{{ route('grn.index') }}" class="nav-link"><span class="dot"></span> GRN</a>
+            <a href="{{ route('new-purchase-orders.index') }}" class="nav-link {{ request()->routeIs('new-purchase-orders.*') ? 'active' : '' }}"><span class="dot"></span> Purchase Order</a>
+            <a href="{{ route('new-grn.index') }}" class="nav-link {{ request()->routeIs('new-grn.*') ? 'active' : '' }}"><span class="dot"></span> GRN</a>
             <a href="{{ route('rm-qc.index') }}" class="nav-link"><span class="dot"></span> RM QC</a>
-            <a href="{{ route('purchase-invoices.index') }}" class="nav-link {{ request()->routeIs('purchase-invoices.*') ? 'active' : '' }}"><span class="dot"></span> Purchase Invoice</a>
+            <a href="{{ route('new-purchase-invoices.index') }}" class="nav-link {{ request()->routeIs('new-purchase-invoices.*') ? 'active' : '' }}"><span class="dot"></span> Purchase Invoice</a>
             <a href="{{ route('purchase-returns.index') }}" class="nav-link"><span class="dot"></span> Purchase Return</a>
             <a href="{{ route('vendor-payments.index') }}" class="nav-link"><span class="dot"></span> Vendor Payment</a>
             <a href="{{ route('vendor-ledger.index') }}" class="nav-link"><span class="dot"></span> Vendor Ledger</a>
@@ -250,9 +251,14 @@
             <span><i class="bi bi-people me-1"></i> CRM</span><span class="arrow">▶</span>
         </button>
         <div class="collapse nav-sub" id="menu-crm">
-            <a href="{{ route('crm-leads.index') }}" class="nav-link"><span class="dot"></span> Leads</a>
+            <a href="{{ route('crm-customers.index') }}" class="nav-link"><span class="dot"></span> Customers</a>
+            <a href="{{ route('new-crm-leads.index') }}" class="nav-link"><span class="dot"></span> Leads</a>
+            <a href="{{ route('crm-activities.index') }}" class="nav-link"><span class="dot"></span> Activities</a>
+            <a href="{{ route('crm-opportunities.index') }}" class="nav-link"><span class="dot"></span> Opportunities</a>
+            <a href="{{ route('customer-complaints.index') }}" class="nav-link"><span class="dot"></span> Complaints</a>
+            <a href="{{ route('crm-leads.index') }}" class="nav-link"><span class="dot"></span> Lead (Legacy)</a>
             <a href="{{ route('crm-followup.index') }}" class="nav-link"><span class="dot"></span> Follow-up</a>
-            <a href="{{ route('complaints.index') }}" class="nav-link"><span class="dot"></span> Complaints</a>
+            <a href="{{ route('complaints.index') }}" class="nav-link"><span class="dot"></span> Complaints (Old)</a>
             <a href="{{ route('feedback.index') }}" class="nav-link"><span class="dot"></span> Feedback</a>
         </div>
 
@@ -348,8 +354,10 @@
                 </div>
                 <div class="tn-col">
                     <div class="tn-col-title">Parties</div>
+                    <a class="tn-link" href="{{ route('suppliers.index') }}">Suppliers</a>
                     <a class="tn-link" href="{{ route('vendors.index') }}">Vendor/Supplier</a>
-                    <a class="tn-link" href="{{ route('customers.index') }}">Customer</a>
+                    <a class="tn-link" href="{{ route('crm-customers.index') }}">Customers (CRM)</a>
+                    <a class="tn-link" href="{{ route('customers.index') }}">Customer Master</a>
                     <a class="tn-link" href="{{ route('distributors.index') }}">Distributor</a>
                     <div class="tn-col-title" style="margin-top:8px">Config</div>
                     <a class="tn-link" href="{{ route('units.index') }}">Unit</a>
@@ -362,11 +370,13 @@
                     <a class="tn-link" href="{{ route('raw-materials.index') }}">Raw Material</a>
                     <a class="tn-link" href="{{ route('packing-materials.index') }}">Packing Material</a>
                     <a class="tn-link" href="{{ route('finished-goods.index') }}">Finished Goods</a>
+                    <a class="tn-link" href="{{ route('fg-products.index') }}">FG Products</a>
                     <a class="tn-link" href="{{ route('semi-finished-goods.index') }}">Semi Finished</a>
                     <a class="tn-link" href="{{ route('recipes.index') }}">Recipe / BOM</a>
                     <a class="tn-link" href="{{ route('allergens.index') }}">Allergen</a>
                     <a class="tn-link" href="{{ route('fssai.index') }}">FSSAI</a>
                     <a class="tn-link" href="{{ route('machines.index') }}">Machine</a>
+                    <a class="tn-link" href="{{ route('warehouse-mgmt.index') }}">Warehouse Mgmt</a>
                 </div>
             </div>
         </div>
@@ -380,14 +390,15 @@
                 <div class="tn-col">
                     <div class="tn-col-title">Purchase</div>
                     <a class="tn-link" href="{{ route('purchase-requisitions.index') }}">Requisition</a>
-                    <a class="tn-link" href="{{ route('purchase-orders.index') }}">Purchase Order</a>
-                    <a class="tn-link" href="{{ route('grn.index') }}">GRN</a>
-                    <a class="tn-link" href="{{ route('purchase-invoices.index') }}">Purchase Invoice</a>
+                    <a class="tn-link" href="{{ route('new-purchase-orders.index') }}">Purchase Order</a>
+                    <a class="tn-link" href="{{ route('new-grn.index') }}">GRN</a>
+                    <a class="tn-link" href="{{ route('new-purchase-invoices.index') }}">Purchase Invoice</a>
                     <a class="tn-link" href="{{ route('purchase-returns.index') }}">Purchase Return</a>
                     <a class="tn-link" href="{{ route('vendor-payments.index') }}">Vendor Payment</a>
                     <div class="tn-col-title" style="margin-top:8px">Inventory</div>
                     <a class="tn-link" href="{{ route('stock-transfer.index') }}">Stock Transfer</a>
                     <a class="tn-link" href="{{ route('stock-adjustment.index') }}">Stock Adjustment</a>
+                    <a class="tn-link" href="{{ route('fg-stock.index') }}">FG Stock</a>
                     <a class="tn-link" href="{{ route('damage-writeoff.index') }}">Damage Write-off</a>
                 </div>
                 <div class="tn-col">
@@ -401,6 +412,7 @@
                     <a class="tn-link" href="{{ route('sales-quotations.index') }}">Quotation</a>
                     <a class="tn-link" href="{{ route('sales-orders.index') }}">Sales Order</a>
                     <a class="tn-link" href="{{ route('sales.index') }}">Sales Invoice</a>
+                    <a class="tn-link" href="{{ route('dispatch-orders.index') }}">Dispatch Order</a>
                     <a class="tn-link" href="{{ route('sales-returns.index') }}">Sales Return</a>
                     <a class="tn-link" href="{{ route('retail-pos.index') }}">Retail POS</a>
                     <a class="tn-link" href="{{ route('delivery-notes.index') }}">Delivery Note</a>
@@ -413,6 +425,11 @@
                     <a class="tn-link" href="{{ route('contra-vouchers.index') }}">Contra Voucher</a>
                     <a class="tn-link" href="{{ route('debit-credit-notes.index') }}">Dr / Cr Note</a>
                     <a class="tn-link" href="{{ route('bank-reconciliation.index') }}">Bank Reconciliation</a>
+                    <div class="tn-col-title" style="margin-top:8px">CRM</div>
+                    <a class="tn-link" href="{{ route('new-crm-leads.index') }}">Leads</a>
+                    <a class="tn-link" href="{{ route('crm-activities.index') }}">Activities</a>
+                    <a class="tn-link" href="{{ route('crm-opportunities.index') }}">Opportunities</a>
+                    <a class="tn-link" href="{{ route('customer-complaints.index') }}">Complaints</a>
                     <div class="tn-col-title" style="margin-top:8px">HR &amp; Payroll</div>
                     <a class="tn-link" href="{{ route('attendance.index') }}">Attendance</a>
                     <a class="tn-link" href="{{ route('leaves.index') }}">Leave</a>
@@ -462,6 +479,10 @@
                     <a class="tn-link" href="{{ route('reorder.index') }}">Reorder Report</a>
                     <div class="tn-col-title" style="margin-top:8px">Analytics</div>
                     <a class="tn-link" href="{{ route('bi-dashboard.index') }}">BI Dashboard</a>
+                    <a class="tn-link" href="{{ route('sales-analytics.index') }}">Sales Analytics</a>
+                    <a class="tn-link" href="{{ route('inventory-report.index') }}">Inventory Report</a>
+                    <a class="tn-link" href="{{ route('ageing-report.index') }}">AR/AP Ageing</a>
+                    <a class="tn-link" href="{{ route('pl-report.index') }}">P&amp;L Report</a>
                     <a class="tn-link" href="{{ route('report-builder.index') }}">Report Builder</a>
                     <a class="tn-link" href="{{ route('cogs-posting.index') }}">COGS Posting</a>
                 </div>

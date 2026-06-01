@@ -1,60 +1,97 @@
 <?php
+
 namespace App\Http\Controllers;
+
+use App\Models\Einvoice;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class EinvoiceController extends Controller
 {
-    protected $table = 'einvoice';
-    protected $title = 'E-Invoice';
-
-    public function index(Request $request)
+    public function index()
     {
-        $q = $request->get('q');
-        $rows = DB::table($this->table)
-            ->when($q, fn($query) => $query->where('name','like',"%$q%")->orWhere('code','like',"%$q%"))
-            ->orderByDesc('id')->paginate(20)->withQueryString();
-        return view('generic.index', ['rows'=>$rows,'title'=>$this->title,'slug'=>'einvoice','q'=>$q,'table'=>$this->table]);
+        $einvoices = Einvoice::orderByDesc('created_at')->paginate(25);
+        return view('integrations.einvoice.index', compact('einvoices'));
     }
 
     public function create()
     {
-        return view('generic.create', ['title'=>$this->title,'slug'=>'einvoice','table'=>$this->table,'row'=>null]);
+        return redirect()->route('einvoices.index');
     }
 
     public function store(Request $request)
     {
-        $data = $request->except(['_token','_method']);
-        $data['created_at'] = now();
-        $data['updated_at'] = now();
-        $data['status'] = $data['status'] ?? 'active';
-        DB::table($this->table)->insert($data);
-        return redirect()->route('einvoice.index')->with('success', '$this->title saved successfully.');
+        $request->validate(['invoice_id' => 'required|integer']);
+        return $this->generate($request->input('invoice_id'));
     }
 
-    public function show($id)
+    /**
+     * Simulate IRN generation for a sales invoice.
+     */
+    public function generate(int $invoiceId)
     {
-        $row = DB::table($this->table)->find($id);
-        return view('generic.show', ['title'=>$this->title,'slug'=>'einvoice','table'=>$this->table,'row'=>$row]);
+        $existing = Einvoice::where('sales_invoice_id', $invoiceId)->where('status', 'active')->first();
+        if ($existing) {
+            return redirect()->back()->with('error', 'An active IRN already exists for this invoice.');
+        }
+
+        $irn = hash('sha256', 'INV-' . $invoiceId . '-' . now()->timestamp . '-' . Str::random(8));
+        $ackNo = 'ACK' . date('Y') . str_pad($invoiceId, 8, '0', STR_PAD_LEFT);
+        $qrData = base64_encode(json_encode([
+            'irn' => $irn,
+            'ackNo' => $ackNo,
+            'invoice_id' => $invoiceId,
+            'ts' => now()->toIso8601String(),
+        ]));
+
+        Einvoice::create([
+            'sales_invoice_id' => $invoiceId,
+            'irn' => $irn,
+            'ack_no' => $ackNo,
+            'ack_date' => now(),
+            'qr_code' => $qrData,
+            'signed_invoice' => json_encode(['irn' => $irn, 'invoice_id' => $invoiceId]),
+            'status' => 'active',
+        ]);
+
+        return redirect()->route('einvoices.index')->with('success', "IRN generated: {$irn}");
     }
 
-    public function edit($id)
+    public function show(Einvoice $einvoice)
     {
-        $row = DB::table($this->table)->find($id);
-        return view('generic.create', ['title'=>$this->title,'slug'=>'einvoice','table'=>$this->table,'row'=>$row]);
+        return view('integrations.einvoice.index', [
+            'einvoices' => Einvoice::paginate(25),
+            'selected' => $einvoice,
+        ]);
     }
 
-    public function update(Request $request, $id)
+    public function edit(Einvoice $einvoice)
     {
-        $data = $request->except(['_token','_method']);
-        $data['updated_at'] = now();
-        DB::table($this->table)->where('id',$id)->update($data);
-        return redirect()->route('einvoice.index')->with('success', '$this->title updated successfully.');
+        return $this->show($einvoice);
     }
 
-    public function destroy($id)
+    public function update(Request $request, Einvoice $einvoice)
     {
-        DB::table($this->table)->where('id',$id)->delete();
-        return redirect()->route('einvoice.index')->with('success', '$this->title deleted.');
+        return redirect()->route('einvoices.index');
+    }
+
+    public function destroy(Einvoice $einvoice)
+    {
+        return $this->cancelIrn($einvoice->id);
+    }
+
+    public function cancelIrn(int $id)
+    {
+        $einvoice = Einvoice::findOrFail($id);
+        if ($einvoice->status === 'cancelled') {
+            return redirect()->back()->with('error', 'IRN is already cancelled.');
+        }
+        $cancelIrn = hash('sha256', 'CANCEL-' . $einvoice->irn . '-' . now()->timestamp);
+        $einvoice->update([
+            'status' => 'cancelled',
+            'cancel_irn' => $cancelIrn,
+            'cancel_date' => now(),
+        ]);
+        return redirect()->route('einvoices.index')->with('success', 'IRN cancelled successfully.');
     }
 }
