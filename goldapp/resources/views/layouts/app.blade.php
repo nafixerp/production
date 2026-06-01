@@ -26,10 +26,25 @@
         .nav-sub .nav-link .dot{width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0}
         .dash-link{color:#b0a880;padding:10px 16px;display:flex;align-items:center;gap:10px;font-size:.85rem;border-left:3px solid transparent;transition:all .2s;text-decoration:none}
         .dash-link:hover,.dash-link.active{color:var(--gold);background:rgba(212,175,55,.08);border-left-color:var(--gold)}
-        #topbar{margin-left:240px;background:linear-gradient(90deg,#0f0f22 0%,#1a1535 50%,#0f0f22 100%);border-bottom:1px solid var(--border-gold);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:999}
-        #topbar .page-title{color:var(--gold);font-size:.88rem;font-weight:600;letter-spacing:1px}
-        #topbar .user-info{display:flex;align-items:center;gap:12px}
+        #topbar{margin-left:240px;background:linear-gradient(90deg,#0f0f22 0%,#1a1535 50%,#0f0f22 100%);border-bottom:1px solid var(--border-gold);padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:999}
+        #topbar .page-title{color:var(--gold);font-size:.82rem;font-weight:600;letter-spacing:1px;white-space:nowrap}
+        #topbar .user-info{display:flex;align-items:center;gap:12px;flex-shrink:0}
         #topbar .user-name{color:var(--gold-light);font-size:.8rem}
+        /* Top Dropdown Nav */
+        .top-nav{display:flex;align-items:center;gap:2px;margin:0 18px}
+        .top-nav .tn-item{position:relative}
+        .top-nav .tn-btn{background:none;border:none;color:#b0a878;font-size:.78rem;font-weight:600;letter-spacing:.8px;padding:6px 13px;border-radius:5px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .18s;white-space:nowrap;text-transform:uppercase}
+        .top-nav .tn-btn:hover,.top-nav .tn-btn.open{color:var(--gold);background:rgba(212,175,55,.1)}
+        .top-nav .tn-btn .tn-arrow{font-size:.55rem;transition:transform .2s}
+        .top-nav .tn-btn.open .tn-arrow{transform:rotate(180deg)}
+        .top-nav .tn-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;min-width:200px;background:#0e0e24;border:1px solid var(--border-gold);border-radius:7px;box-shadow:0 8px 32px rgba(0,0,0,.6);z-index:2000;padding:6px 0}
+        .top-nav .tn-dropdown.multi-col{min-width:560px;display:none;flex-wrap:wrap}
+        .top-nav .tn-dropdown.show{display:block}
+        .top-nav .tn-dropdown.multi-col.show{display:flex}
+        .top-nav .tn-col{min-width:180px;flex:1}
+        .top-nav .tn-col-title{color:var(--text-muted-gold);font-size:.6rem;letter-spacing:2px;text-transform:uppercase;padding:8px 14px 4px;border-bottom:1px solid rgba(212,175,55,.1);margin-bottom:2px}
+        .top-nav .tn-link{display:block;color:#a09878;font-size:.78rem;padding:6px 14px;text-decoration:none;transition:all .15s;white-space:nowrap}
+        .top-nav .tn-link:hover{color:var(--gold);background:rgba(212,175,55,.07);padding-left:18px}
         .btn-logout{background:rgba(212,175,55,.12);color:var(--gold);border:1px solid var(--border-gold);padding:4px 12px;border-radius:4px;font-size:.76rem;cursor:pointer;text-decoration:none;transition:all .2s}
         .btn-logout:hover{background:var(--gold);color:#000}
         #main-content{margin-left:240px;padding:22px;min-height:calc(100vh - 52px)}
@@ -310,6 +325,151 @@
 
 <div id="topbar">
     <div class="page-title">◆ @yield('page-title', 'Dashboard')</div>
+
+    {{-- ── TOP DROPDOWN MENUS ── --}}
+    <nav class="top-nav">
+
+        {{-- MASTERS --}}
+        <div class="tn-item">
+            <button class="tn-btn" onclick="toggleTN('tn-masters')">
+                <i class="bi bi-grid-3x3-gap"></i> Masters <span class="tn-arrow">▼</span>
+            </button>
+            <div class="tn-dropdown multi-col" id="tn-masters">
+                <div class="tn-col">
+                    <div class="tn-col-title">Organisation</div>
+                    <a class="tn-link" href="{{ route('companies.index') }}">Company</a>
+                    <a class="tn-link" href="{{ route('branches.index') }}">Branch</a>
+                    <a class="tn-link" href="{{ route('warehouses.index') }}">Warehouse</a>
+                    <a class="tn-link" href="{{ route('factories.index') }}">Factory</a>
+                    <a class="tn-link" href="{{ route('departments.index') }}">Department</a>
+                    <a class="tn-link" href="{{ route('staff.index') }}">Staff</a>
+                    <a class="tn-link" href="{{ route('routes.index') }}">Route</a>
+                    <a class="tn-link" href="{{ route('vehicles.index') }}">Vehicle</a>
+                </div>
+                <div class="tn-col">
+                    <div class="tn-col-title">Parties</div>
+                    <a class="tn-link" href="{{ route('vendors.index') }}">Vendor/Supplier</a>
+                    <a class="tn-link" href="{{ route('customers.index') }}">Customer</a>
+                    <a class="tn-link" href="{{ route('distributors.index') }}">Distributor</a>
+                    <div class="tn-col-title" style="margin-top:8px">Config</div>
+                    <a class="tn-link" href="{{ route('units.index') }}">Unit</a>
+                    <a class="tn-link" href="{{ route('taxes.index') }}">Tax / GST</a>
+                    <a class="tn-link" href="{{ route('hsn-sac.index') }}">HSN / SAC</a>
+                    <a class="tn-link" href="{{ route('accounts.index') }}">Chart of Accounts</a>
+                </div>
+                <div class="tn-col">
+                    <div class="tn-col-title">Items</div>
+                    <a class="tn-link" href="{{ route('raw-materials.index') }}">Raw Material</a>
+                    <a class="tn-link" href="{{ route('packing-materials.index') }}">Packing Material</a>
+                    <a class="tn-link" href="{{ route('finished-goods.index') }}">Finished Goods</a>
+                    <a class="tn-link" href="{{ route('semi-finished-goods.index') }}">Semi Finished</a>
+                    <a class="tn-link" href="{{ route('recipes.index') }}">Recipe / BOM</a>
+                    <a class="tn-link" href="{{ route('allergens.index') }}">Allergen</a>
+                    <a class="tn-link" href="{{ route('fssai.index') }}">FSSAI</a>
+                    <a class="tn-link" href="{{ route('machines.index') }}">Machine</a>
+                </div>
+            </div>
+        </div>
+
+        {{-- TRANSACTIONS --}}
+        <div class="tn-item">
+            <button class="tn-btn" onclick="toggleTN('tn-transactions')">
+                <i class="bi bi-arrow-left-right"></i> Transactions <span class="tn-arrow">▼</span>
+            </button>
+            <div class="tn-dropdown multi-col" id="tn-transactions">
+                <div class="tn-col">
+                    <div class="tn-col-title">Purchase</div>
+                    <a class="tn-link" href="{{ route('purchase-requisitions.index') }}">Requisition</a>
+                    <a class="tn-link" href="{{ route('purchase-orders.index') }}">Purchase Order</a>
+                    <a class="tn-link" href="{{ route('grn.index') }}">GRN</a>
+                    <a class="tn-link" href="{{ route('purchase-invoices.index') }}">Purchase Invoice</a>
+                    <a class="tn-link" href="{{ route('purchase-returns.index') }}">Purchase Return</a>
+                    <a class="tn-link" href="{{ route('vendor-payments.index') }}">Vendor Payment</a>
+                    <div class="tn-col-title" style="margin-top:8px">Inventory</div>
+                    <a class="tn-link" href="{{ route('stock-transfer.index') }}">Stock Transfer</a>
+                    <a class="tn-link" href="{{ route('stock-adjustment.index') }}">Stock Adjustment</a>
+                    <a class="tn-link" href="{{ route('damage-writeoff.index') }}">Damage Write-off</a>
+                </div>
+                <div class="tn-col">
+                    <div class="tn-col-title">Production</div>
+                    <a class="tn-link" href="{{ route('production-plans.index') }}">Production Plan</a>
+                    <a class="tn-link" href="{{ route('production-orders.index') }}">Production Order</a>
+                    <a class="tn-link" href="{{ route('material-issues.index') }}">Material Issue</a>
+                    <a class="tn-link" href="{{ route('fg-receipt.index') }}">FG Receipt</a>
+                    <a class="tn-link" href="{{ route('yield-wastage.index') }}">Yield / Wastage</a>
+                    <div class="tn-col-title" style="margin-top:8px">Sales</div>
+                    <a class="tn-link" href="{{ route('sales-quotations.index') }}">Quotation</a>
+                    <a class="tn-link" href="{{ route('sales-orders.index') }}">Sales Order</a>
+                    <a class="tn-link" href="{{ route('sales.index') }}">Sales Invoice</a>
+                    <a class="tn-link" href="{{ route('sales-returns.index') }}">Sales Return</a>
+                    <a class="tn-link" href="{{ route('retail-pos.index') }}">Retail POS</a>
+                    <a class="tn-link" href="{{ route('delivery-notes.index') }}">Delivery Note</a>
+                </div>
+                <div class="tn-col">
+                    <div class="tn-col-title">Accounts</div>
+                    <a class="tn-link" href="{{ route('receipts.index') }}">Receipt Voucher</a>
+                    <a class="tn-link" href="{{ route('payments.index') }}">Payment Voucher</a>
+                    <a class="tn-link" href="{{ route('journal-vouchers.index') }}">Journal Voucher</a>
+                    <a class="tn-link" href="{{ route('contra-vouchers.index') }}">Contra Voucher</a>
+                    <a class="tn-link" href="{{ route('debit-credit-notes.index') }}">Dr / Cr Note</a>
+                    <a class="tn-link" href="{{ route('bank-reconciliation.index') }}">Bank Reconciliation</a>
+                    <div class="tn-col-title" style="margin-top:8px">HR &amp; Payroll</div>
+                    <a class="tn-link" href="{{ route('attendance.index') }}">Attendance</a>
+                    <a class="tn-link" href="{{ route('leaves.index') }}">Leave</a>
+                    <a class="tn-link" href="{{ route('payroll.index') }}">Payroll</a>
+                    <a class="tn-link" href="{{ route('salary-posting.index') }}">Salary Posting</a>
+                </div>
+            </div>
+        </div>
+
+        {{-- REPORTS --}}
+        <div class="tn-item">
+            <button class="tn-btn" onclick="toggleTN('tn-reports')">
+                <i class="bi bi-bar-chart-line"></i> Reports <span class="tn-arrow">▼</span>
+            </button>
+            <div class="tn-dropdown multi-col" id="tn-reports">
+                <div class="tn-col">
+                    <div class="tn-col-title">Accounts</div>
+                    <a class="tn-link" href="{{ route('daybook.index') }}">Daybook</a>
+                    <a class="tn-link" href="{{ route('daybook.ledger') }}">Account Ledger</a>
+                    <a class="tn-link" href="{{ route('trial-balance.index') }}">Trial Balance</a>
+                    <a class="tn-link" href="{{ route('profit-loss.index') }}">Profit &amp; Loss</a>
+                    <a class="tn-link" href="{{ route('balance-sheet.index') }}">Balance Sheet</a>
+                    <a class="tn-link" href="{{ route('cash-flow.index') }}">Cash Flow</a>
+                    <a class="tn-link" href="{{ route('cash-book.index') }}">Cash Book</a>
+                    <a class="tn-link" href="{{ route('bank-book.index') }}">Bank Book</a>
+                    <a class="tn-link" href="{{ route('general-ledger.index') }}">General Ledger</a>
+                </div>
+                <div class="tn-col">
+                    <div class="tn-col-title">GST</div>
+                    <a class="tn-link" href="{{ route('gst-purchase-register.index') }}">GST Purchase Register</a>
+                    <a class="tn-link" href="{{ route('gst-sales-register.index') }}">GST Sales Register</a>
+                    <a class="tn-link" href="{{ route('gstr1.index') }}">GSTR-1</a>
+                    <a class="tn-link" href="{{ route('gstr3b.index') }}">GSTR-3B</a>
+                    <a class="tn-link" href="{{ route('einvoice.index') }}">E-Invoice</a>
+                    <a class="tn-link" href="{{ route('eway-bill.index') }}">E-Way Bill</a>
+                    <div class="tn-col-title" style="margin-top:8px">Purchase</div>
+                    <a class="tn-link" href="{{ route('vendor-ledger.index') }}">Vendor Ledger</a>
+                    <a class="tn-link" href="{{ route('vendor-ratings.index') }}">Vendor Rating</a>
+                </div>
+                <div class="tn-col">
+                    <div class="tn-col-title">Inventory &amp; Production</div>
+                    <a class="tn-link" href="{{ route('stock-ledger.index') }}">Stock Ledger</a>
+                    <a class="tn-link" href="{{ route('expiry-tracking.index') }}">Expiry Tracking</a>
+                    <a class="tn-link" href="{{ route('batch-traceability.index') }}">Batch Traceability</a>
+                    <a class="tn-link" href="{{ route('production-costing.index') }}">Production Costing</a>
+                    <a class="tn-link" href="{{ route('rm-inventory.index') }}">RM Inventory</a>
+                    <a class="tn-link" href="{{ route('reorder.index') }}">Reorder Report</a>
+                    <div class="tn-col-title" style="margin-top:8px">Analytics</div>
+                    <a class="tn-link" href="{{ route('bi-dashboard.index') }}">BI Dashboard</a>
+                    <a class="tn-link" href="{{ route('report-builder.index') }}">Report Builder</a>
+                    <a class="tn-link" href="{{ route('cogs-posting.index') }}">COGS Posting</a>
+                </div>
+            </div>
+        </div>
+
+    </nav>
+
     <div class="user-info">
         <span class="user-name">{{ Auth::user()->name ?? 'Admin' }}</span>
         <form method="POST" action="{{ route('logout') }}" style="margin:0">
@@ -335,6 +495,27 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function toggleTN(id) {
+    const el = document.getElementById(id);
+    const btn = el.previousElementSibling;
+    const isOpen = el.classList.contains('show');
+    // close all
+    document.querySelectorAll('.tn-dropdown').forEach(d => d.classList.remove('show'));
+    document.querySelectorAll('.tn-btn').forEach(b => b.classList.remove('open'));
+    if (!isOpen) {
+        el.classList.add('show');
+        btn.classList.add('open');
+    }
+}
+// close on outside click
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.tn-item')) {
+        document.querySelectorAll('.tn-dropdown').forEach(d => d.classList.remove('show'));
+        document.querySelectorAll('.tn-btn').forEach(b => b.classList.remove('open'));
+    }
+});
+</script>
 @stack('scripts')
 </body>
 </html>
