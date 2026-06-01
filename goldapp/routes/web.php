@@ -157,6 +157,26 @@ use App\Http\Controllers\AuditLogsController;
 use App\Http\Controllers\BackupRestoreController;
 use App\Http\Controllers\ReportBuilderController;
 use App\Http\Controllers\BIDashboardController;
+// New module controllers
+use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\NewPurchaseOrderController;
+use App\Http\Controllers\GRNController;
+use App\Http\Controllers\NewPurchaseInvoiceController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CRMLeadController;
+use App\Http\Controllers\CRMActivityController;
+use App\Http\Controllers\CRMOpportunityController;
+use App\Http\Controllers\CustomerComplaintController;
+use App\Http\Controllers\FinishedGoodsController;
+use App\Http\Controllers\FGStockController;
+use App\Http\Controllers\FGQualityCheckController;
+use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\DispatchOrderController;
+use App\Http\Controllers\PLReportController;
+use App\Http\Controllers\SalesAnalyticsController;
+use App\Http\Controllers\InventoryReportController;
+use App\Http\Controllers\AgeingReportController;
+use App\Http\Controllers\APIClientController;
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
@@ -335,6 +355,27 @@ Route::middleware('auth')->group(function () {
     Route::post('backup/create',[BackupRestoreController::class,'createBackup'])->name('backup.create');
     Route::get('report-builder',[ReportBuilderController::class,'index'])->name('report-builder.index');
     Route::get('bi-dashboard',  [BIDashboardController::class,'index'])->name('bi-dashboard.index');
+
+    // NEW MODULES (1-10 detailed controllers)
+    Route::resource('suppliers',                   SupplierController::class);
+    Route::resource('new-purchase-orders',         NewPurchaseOrderController::class);
+    Route::resource('new-grn',                     GRNController::class);
+    Route::resource('new-purchase-invoices',       NewPurchaseInvoiceController::class);
+    Route::resource('crm-customers',               CustomerController::class);
+    Route::resource('new-crm-leads',               CRMLeadController::class);
+    Route::resource('crm-activities',              CRMActivityController::class);
+    Route::resource('crm-opportunities',           CRMOpportunityController::class);
+    Route::resource('customer-complaints',         CustomerComplaintController::class);
+    Route::resource('fg-products',                 FinishedGoodsController::class);
+    Route::resource('fg-stock',                    FGStockController::class);
+    Route::resource('fg-quality',                  FGQualityCheckController::class);
+    Route::resource('warehouse-mgmt',              WarehouseController::class);
+    Route::resource('dispatch-orders',             DispatchOrderController::class);
+    Route::get('pl-report',            [PLReportController::class,'index'])->name('pl-report.index');
+    Route::get('sales-analytics',      [SalesAnalyticsController::class,'index'])->name('sales-analytics.index');
+    Route::get('inventory-report',     [InventoryReportController::class,'index'])->name('inventory-report.index');
+    Route::get('ageing-report',        [AgeingReportController::class,'index'])->name('ageing-report.index');
+    Route::resource('api-clients',                 APIClientController::class);
 
     // MOBILE API (139)
     Route::prefix('api/mobile')->group(function () {
