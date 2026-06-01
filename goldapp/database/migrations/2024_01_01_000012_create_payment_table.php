@@ -5,24 +5,26 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     public function up(): void {
-        Schema::dropIfExists('daybookpart');
-        Schema::create('daybookpart', function (Blueprint $table) {
+        Schema::dropIfExists('payment');
+        Schema::create('payment', function (Blueprint $table) {
             $table->id();
             $table->string('slno', 30)->unique();
-            $table->string('vchno', 30)->nullable();
-            $table->text('particular')->nullable();
-            $table->date('tdate')->nullable()->index();
-            $table->string('vtype', 20)->nullable()->index();
-            $table->unsignedBigInteger('staff_id')->nullable();
+            $table->string('vch_no', 30)->nullable();
+            $table->date('vch_date')->nullable();
+            $table->unsignedBigInteger('party_id')->nullable();
+            $table->string('party_name', 180)->nullable();
+            $table->decimal('amount', 18, 4)->default(0);
+            $table->enum('payment_mode', ['cash','bank','cheque','pdc'])->default('cash');
+            $table->unsignedBigInteger('bank_account_id')->nullable();
             $table->string('cheque_no', 50)->nullable();
             $table->date('cheque_date')->nullable();
             $table->string('bank_name', 100)->nullable();
             $table->text('narration')->nullable();
+            $table->tinyInteger('status')->default(1);
             $table->unsignedBigInteger('branch_id')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamps();
-            $table->index('slno');
         });
     }
-    public function down(): void { Schema::dropIfExists('daybookpart'); }
+    public function down(): void { Schema::dropIfExists('payment'); }
 };
