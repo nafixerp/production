@@ -28,7 +28,7 @@
             </div>
             @endif
 
-            <form method="POST" action="{{ isset($permission) ? route('permissions.update', $permission) : route('permissions.store') }}">
+            <form method="POST" action="{{ isset($permission) ? route('admin.permissions.update', $permission) : route('admin.permissions.store') }}">
                 @csrf
                 @if(isset($permission)) @method('PUT') @endif
 
@@ -71,7 +71,7 @@
                 </div>
 
                 <div class="d-flex gap-2 justify-content-end">
-                    <a href="{{ route('permissions.index') }}" class="btn btn-sm" style="background:rgba(255,255,255,.05);color:#a09878;border:1px solid var(--border-gold)">
+                    <a href="{{ route('admin.permissions.index') }}" class="btn btn-sm" style="background:rgba(255,255,255,.05);color:#a09878;border:1px solid var(--border-gold)">
                         <i class="bi bi-x me-1"></i>Cancel
                     </a>
                     <button type="submit" class="btn btn-sm" style="background:var(--gold);color:#000;font-weight:600;padding:8px 20px">

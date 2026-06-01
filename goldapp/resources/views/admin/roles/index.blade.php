@@ -28,7 +28,7 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h6 style="color:var(--gold);margin:0"><i class="bi bi-shield-check me-2"></i>Roles ({{ $roles->count() }})</h6>
-    <a href="{{ route('roles.create') }}" class="btn" style="background:var(--gold);color:#000;font-weight:600;font-size:.82rem">
+    <a href="{{ route('admin.roles.create') }}" class="btn" style="background:var(--gold);color:#000;font-weight:600;font-size:.82rem">
         <i class="bi bi-plus-lg me-1"></i>Add Role
     </a>
 </div>
@@ -62,11 +62,11 @@
                             <a href="{{ route('roles.permissions', $role->id) }}" class="btn btn-sm" style="background:rgba(81,207,102,.1);color:#51cf66;border:1px solid rgba(81,207,102,.3);font-size:.72rem" title="Permissions">
                                 <i class="bi bi-key"></i>
                             </a>
-                            <a href="{{ route('roles.edit', $role) }}" class="btn btn-sm" style="background:rgba(212,175,55,.15);color:var(--gold);border:1px solid var(--border-gold);font-size:.72rem" title="Edit">
+                            <a href="{{ route('admin.roles.edit', $role) }}" class="btn btn-sm" style="background:rgba(212,175,55,.15);color:var(--gold);border:1px solid var(--border-gold);font-size:.72rem" title="Edit">
                                 <i class="bi bi-pencil"></i>
                             </a>
                             @if(!$role->is_system)
-                            <form method="POST" action="{{ route('roles.destroy', $role) }}" onsubmit="return confirm('Delete role {{ $role->name }}?')">
+                            <form method="POST" action="{{ route('admin.roles.destroy', $role) }}" onsubmit="return confirm('Delete role {{ $role->name }}?')">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-sm" style="background:rgba(255,107,107,.1);color:#ff6b6b;border:1px solid rgba(255,107,107,.3);font-size:.72rem" title="Delete">
                                     <i class="bi bi-trash"></i>
@@ -77,7 +77,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="6" class="text-center text-muted py-4">No roles found. <a href="{{ route('roles.create') }}" style="color:var(--gold)">Create one.</a></td></tr>
+                <tr><td colspan="6" class="text-center text-muted py-4">No roles found. <a href="{{ route('admin.roles.create') }}" style="color:var(--gold)">Create one.</a></td></tr>
                 @endforelse
             </tbody>
         </table>

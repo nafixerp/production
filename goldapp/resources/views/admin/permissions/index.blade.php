@@ -33,7 +33,7 @@
                 <i class="bi bi-magic me-1"></i>Auto-Generate
             </button>
         </form>
-        <a href="{{ route('permissions.create') }}" class="btn btn-sm" style="background:var(--gold);color:#000;font-weight:600;font-size:.78rem">
+        <a href="{{ route('admin.permissions.create') }}" class="btn btn-sm" style="background:var(--gold);color:#000;font-weight:600;font-size:.78rem">
             <i class="bi bi-plus-lg me-1"></i>Add Permission
         </a>
     </div>

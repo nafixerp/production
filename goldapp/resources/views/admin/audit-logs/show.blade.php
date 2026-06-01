@@ -30,7 +30,7 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h6 style="color:var(--gold);margin:0"><i class="bi bi-shield-lock me-2"></i>Audit Event #{{ $log->id }}</h6>
-    <a href="{{ route('audit-logs.index') }}" class="btn btn-sm" style="background:rgba(255,255,255,.05);color:#a09878;border:1px solid var(--border-gold);font-size:.78rem">
+    <a href="{{ route('admin.audit-logs.index') }}" class="btn btn-sm" style="background:rgba(255,255,255,.05);color:#a09878;border:1px solid var(--border-gold);font-size:.78rem">
         <i class="bi bi-arrow-left me-1"></i>Back to Logs
     </a>
 </div>

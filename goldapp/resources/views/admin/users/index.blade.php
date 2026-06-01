@@ -26,7 +26,7 @@
 
 <div class="page-actions">
     <h6 style="color:var(--gold);margin:0"><i class="bi bi-people me-2"></i>All Users ({{ $users->total() }})</h6>
-    <a href="{{ route('users.create') }}" class="btn" style="background:var(--gold);color:#000;font-weight:600;font-size:.82rem">
+    <a href="{{ route('admin.users.create') }}" class="btn" style="background:var(--gold);color:#000;font-weight:600;font-size:.82rem">
         <i class="bi bi-plus-lg me-1"></i>Add User
     </a>
 </div>
@@ -88,7 +88,7 @@
                     </td>
                     <td class="text-center">
                         <div class="d-flex gap-1 justify-content-center">
-                            <a href="{{ route('users.edit', $user) }}" class="btn btn-sm" style="background:rgba(212,175,55,.15);color:var(--gold);border:1px solid var(--border-gold);font-size:.72rem" title="Edit">
+                            <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-sm" style="background:rgba(212,175,55,.15);color:var(--gold);border:1px solid var(--border-gold);font-size:.72rem" title="Edit">
                                 <i class="bi bi-pencil"></i>
                             </a>
                             <button type="button" class="btn btn-sm" style="background:rgba(81,207,102,.1);color:#51cf66;border:1px solid rgba(81,207,102,.3);font-size:.72rem"
@@ -96,7 +96,7 @@
                                 <i class="bi bi-key"></i>
                             </button>
                             @if(auth()->id() !== $user->id)
-                            <form method="POST" action="{{ route('users.destroy', $user) }}" onsubmit="return confirm('Deactivate {{ $user->name }}?')">
+                            <form method="POST" action="{{ route('admin.users.destroy', $user) }}" onsubmit="return confirm('Deactivate {{ $user->name }}?')">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-sm" style="background:rgba(255,107,107,.1);color:#ff6b6b;border:1px solid rgba(255,107,107,.3);font-size:.72rem" title="Deactivate">
                                     <i class="bi bi-person-dash"></i>

@@ -34,7 +34,7 @@
             </div>
             @endif
 
-            <form method="POST" action="{{ isset($user) ? route('users.update', $user) : route('users.store') }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ isset($user) ? route('admin.users.update', $user) : route('admin.users.store') }}" enctype="multipart/form-data">
                 @csrf
                 @if(isset($user)) @method('PUT') @endif
 
@@ -99,7 +99,7 @@
 
                 <hr style="border-color:var(--border-gold);margin:20px 0">
                 <div class="d-flex gap-2 justify-content-end">
-                    <a href="{{ route('users.index') }}" class="btn btn-sm" style="background:rgba(255,255,255,.05);color:#a09878;border:1px solid var(--border-gold)">
+                    <a href="{{ route('admin.users.index') }}" class="btn btn-sm" style="background:rgba(255,255,255,.05);color:#a09878;border:1px solid var(--border-gold)">
                         <i class="bi bi-x me-1"></i>Cancel
                     </a>
                     <button type="submit" class="btn btn-sm" style="background:var(--gold);color:#000;font-weight:600;padding:8px 20px">

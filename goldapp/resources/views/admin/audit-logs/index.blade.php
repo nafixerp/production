@@ -94,7 +94,7 @@
                     <td>{{ $log->record_id ?? '—' }}</td>
                     <td style="font-size:.75rem;color:#888">{{ $log->ip_address }}</td>
                     <td class="text-center">
-                        <a href="{{ route('audit-logs.show', $log->id) }}" class="btn btn-sm" style="background:rgba(212,175,55,.15);color:var(--gold);border:1px solid var(--border-gold);font-size:.7rem">
+                        <a href="{{ route('admin.audit-logs.show', $log->id) }}" class="btn btn-sm" style="background:rgba(212,175,55,.15);color:var(--gold);border:1px solid var(--border-gold);font-size:.7rem">
                             <i class="bi bi-eye"></i>
                         </a>
                     </td>

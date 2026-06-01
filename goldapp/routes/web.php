@@ -406,16 +406,40 @@ Route::middleware('auth')->group(function () {
     Route::get('reports/forecasting',   [ForecastingController::class,'index'])->name('reports.forecast');
 
     // Module 8: User & Role Management
-    Route::resource('admin/users',      UserController::class)->names('users');
+    Route::resource('admin/users',      UserController::class)->names([
+        'index'   => 'admin.users.index',
+        'create'  => 'admin.users.create',
+        'store'   => 'admin.users.store',
+        'show'    => 'admin.users.show',
+        'edit'    => 'admin.users.edit',
+        'update'  => 'admin.users.update',
+        'destroy' => 'admin.users.destroy',
+    ]);
     Route::post('admin/users/{id}/reset-password', [UserController::class,'resetPassword'])->name('users.reset-password');
     Route::post('admin/users/{id}/impersonate',    [UserController::class,'impersonate'])->name('users.impersonate');
-    Route::resource('admin/roles',      RoleController::class)->names('roles');
+    Route::resource('admin/roles',      RoleController::class)->names([
+        'index'   => 'admin.roles.index',
+        'create'  => 'admin.roles.create',
+        'store'   => 'admin.roles.store',
+        'show'    => 'admin.roles.show',
+        'edit'    => 'admin.roles.edit',
+        'update'  => 'admin.roles.update',
+        'destroy' => 'admin.roles.destroy',
+    ]);
     Route::get('admin/roles/{id}/permissions',    [RoleController::class,'permissions'])->name('roles.permissions');
     Route::post('admin/roles/{id}/permissions',   [RoleController::class,'savePermissions'])->name('roles.save-permissions');
-    Route::resource('admin/permissions',PermissionController::class)->names('permissions');
+    Route::resource('admin/permissions',PermissionController::class)->names([
+        'index'   => 'admin.permissions.index',
+        'create'  => 'admin.permissions.create',
+        'store'   => 'admin.permissions.store',
+        'show'    => 'admin.permissions.show',
+        'edit'    => 'admin.permissions.edit',
+        'update'  => 'admin.permissions.update',
+        'destroy' => 'admin.permissions.destroy',
+    ]);
     Route::post('admin/permissions/auto-generate',[PermissionController::class,'autoGenerate'])->name('permissions.auto-generate');
-    Route::get('admin/audit-logs',      [AuditLogController::class,'index'])->name('audit-logs.index');
-    Route::get('admin/audit-logs/{id}', [AuditLogController::class,'show'])->name('audit-logs.show');
+    Route::get('admin/audit-logs',      [AuditLogController::class,'index'])->name('admin.audit-logs.index');
+    Route::get('admin/audit-logs/{id}', [AuditLogController::class,'show'])->name('admin.audit-logs.show');
     Route::get('admin/profile',         [ProfileController::class,'edit'])->name('profile.edit');
     Route::put('admin/profile',         [ProfileController::class,'update'])->name('profile.update');
     Route::resource('api-clients',                 APIClientController::class);
@@ -483,6 +507,55 @@ Route::middleware('auth')->group(function () {
     Route::post('notification-prefs', [NotificationPreferenceController::class, 'update'])->name('notification-prefs.update');
 
     Route::get('admin-dashboard', [AdminDashboardController::class, 'index'])->name('admin-dashboard.index');
+
+    // ============================================================
+    // MODULE 1: PROCUREMENT (Full Implementation)
+    // ============================================================
+    Route::resource('suppliers', \App\Http\Controllers\SupplierController::class);
+
+    Route::resource('purchase-orders', \App\Http\Controllers\NewPurchaseOrderController::class)
+        ->names(['index'=>'purchase-orders.index','create'=>'purchase-orders.create','store'=>'purchase-orders.store','show'=>'purchase-orders.show','edit'=>'purchase-orders.edit','update'=>'purchase-orders.update','destroy'=>'purchase-orders.destroy']);
+    Route::post('purchase-orders/{id}/approve', [\App\Http\Controllers\NewPurchaseOrderController::class, 'approve'])
+        ->name('purchase-orders.approve');
+
+    Route::resource('grn', \App\Http\Controllers\GRNController::class)
+        ->names(['index'=>'grn.index','create'=>'grn.create','store'=>'grn.store','show'=>'grn.show','edit'=>'grn.edit','update'=>'grn.update','destroy'=>'grn.destroy']);
+
+    Route::resource('purchase-invoices-new', \App\Http\Controllers\NewPurchaseInvoiceController::class)
+        ->names(['index'=>'purchase-invoices-new.index','create'=>'purchase-invoices-new.create','store'=>'purchase-invoices-new.store','show'=>'purchase-invoices-new.show','edit'=>'purchase-invoices-new.edit','update'=>'purchase-invoices-new.update','destroy'=>'purchase-invoices-new.destroy']);
+
+    Route::resource('purchase-returns-new', \App\Http\Controllers\NewPurchaseReturnController::class)
+        ->names(['index'=>'purchase-returns-new.index','create'=>'purchase-returns-new.create','store'=>'purchase-returns-new.store','show'=>'purchase-returns-new.show','edit'=>'purchase-returns-new.edit','update'=>'purchase-returns-new.update','destroy'=>'purchase-returns-new.destroy']);
+    Route::post('purchase-returns-new/{id}/approve', [\App\Http\Controllers\NewPurchaseReturnController::class, 'approve'])
+        ->name('purchase-returns-new.approve');
+
+    Route::get('ap-ledger', [\App\Http\Controllers\APLedgerController::class, 'index'])->name('ap-ledger.index');
+
+    // ============================================================
+    // MODULE 2: INVENTORY & PRODUCTION (Full Implementation)
+    // ============================================================
+    Route::resource('raw-materials-new', \App\Http\Controllers\NewRawMaterialController::class)
+        ->names(['index'=>'raw-materials-new.index','create'=>'raw-materials-new.create','store'=>'raw-materials-new.store','show'=>'raw-materials-new.show','edit'=>'raw-materials-new.edit','update'=>'raw-materials-new.update','destroy'=>'raw-materials-new.destroy']);
+
+    Route::get('inventory-stock-new', [\App\Http\Controllers\NewInventoryStockController::class, 'index'])
+        ->name('inventory-stock-new.index');
+
+    Route::get('stock-movements-new', [\App\Http\Controllers\NewStockMovementController::class, 'index'])
+        ->name('stock-movements-new.index');
+
+    Route::resource('production-orders-new', \App\Http\Controllers\NewProductionOrderController::class)
+        ->names(['index'=>'production-orders-new.index','create'=>'production-orders-new.create','store'=>'production-orders-new.store','show'=>'production-orders-new.show','edit'=>'production-orders-new.edit','update'=>'production-orders-new.update','destroy'=>'production-orders-new.destroy']);
+    Route::get('production-orders-new/{id}/issue-form', [\App\Http\Controllers\NewProductionOrderController::class, 'issueForm'])
+        ->name('production-orders-new.issueForm');
+    Route::post('production-orders-new/{id}/issue', [\App\Http\Controllers\NewProductionOrderController::class, 'issue'])
+        ->name('production-orders-new.issue');
+    Route::post('production-orders-new/{id}/complete', [\App\Http\Controllers\NewProductionOrderController::class, 'complete'])
+        ->name('production-orders-new.complete');
+
+    Route::get('wip-new', [\App\Http\Controllers\NewWIPController::class, 'index'])->name('wip-new.index');
+
+    Route::get('production-costing-new', [\App\Http\Controllers\NewProductionCostingController::class, 'index'])
+        ->name('production-costing-new.index');
 });
 
 // Webhooks (no auth)
@@ -497,4 +570,71 @@ Route::prefix('api/v1')->group(function () {
         Route::get('sales-orders', [MobileAPIController::class, 'salesOrders']);
         Route::post('dispatch/{id}/confirm', [MobileAPIController::class, 'confirmDispatch']);
     });
+});
+
+// ============================================================
+// MODULE 3 & 4: Finished Goods / Warehouse + Sales & Orders
+// ============================================================
+Route::middleware('auth')->group(function () {
+
+    // Finished Goods CRUD
+    Route::resource('finished-goods', \App\Http\Controllers\FinishedGoodsController::class);
+
+    // FG Stock (read-only index)
+    Route::get('fg-stock', [\App\Http\Controllers\FGStockController::class, 'index'])->name('fg-stock.index');
+
+    // FG Quality Checks
+    Route::resource('fg-quality', \App\Http\Controllers\FGQualityCheckController::class);
+
+    // Warehouses (new full controller, different resource name to avoid collision)
+    Route::resource('warehouses-full', \App\Http\Controllers\WarehouseController::class)
+        ->parameters(['warehouses-full' => 'warehouse'])
+        ->names([
+            'index'   => 'warehouses.index',
+            'create'  => 'warehouses.create',
+            'store'   => 'warehouses.store',
+            'show'    => 'warehouses.show',
+            'edit'    => 'warehouses.edit',
+            'update'  => 'warehouses.update',
+            'destroy' => 'warehouses.destroy',
+        ]);
+
+    // Dispatch Orders
+    Route::resource('dispatch-orders', \App\Http\Controllers\DispatchOrderController::class);
+    Route::post('dispatch-orders/{id}/dispatch', [\App\Http\Controllers\DispatchOrderController::class, 'dispatch'])
+        ->name('dispatch-orders.dispatch');
+    Route::post('dispatch-orders/{id}/deliver', [\App\Http\Controllers\DispatchOrderController::class, 'deliver'])
+        ->name('dispatch-orders.deliver');
+
+    // Batch Traceability
+    Route::get('batch-trace', [\App\Http\Controllers\BatchTraceabilityController::class, 'index'])->name('batch-trace.index');
+    Route::get('batch-trace/{batchNo}', [\App\Http\Controllers\BatchTraceabilityController::class, 'show'])->name('batch-trace.show');
+
+    // Sales Quotations
+    Route::resource('sales-quotations', \App\Http\Controllers\SalesQuotationController::class);
+    Route::post('sales-quotations/{salesQuotation}/convert-so', [\App\Http\Controllers\SalesQuotationController::class, 'convertToSO'])
+        ->name('sales-quotations.convert-so');
+
+    // Sales Orders
+    Route::resource('sales-orders', \App\Http\Controllers\SalesOrderController::class);
+    Route::post('sales-orders/{salesOrder}/confirm', [\App\Http\Controllers\SalesOrderController::class, 'confirm'])
+        ->name('sales-orders.confirm');
+
+    // Sales Invoices (full double-entry)
+    Route::resource('sales-invoices', \App\Http\Controllers\SalesInvoiceFullController::class)
+        ->parameters(['sales-invoices' => 'salesInvoice']);
+
+    // Sales Returns
+    Route::resource('sales-returns', \App\Http\Controllers\SalesReturnController::class);
+    Route::post('sales-returns/{salesReturn}/approve', [\App\Http\Controllers\SalesReturnController::class, 'approve'])
+        ->name('sales-returns.approve');
+
+    // AR Ledger / Ageing
+    Route::get('ar-ledger', [\App\Http\Controllers\ARLedgerController::class, 'index'])->name('ar-ledger.index');
+
+    // POS
+    Route::resource('pos', \App\Http\Controllers\POSController::class);
+    Route::get('pos/{posSession}/bill', [\App\Http\Controllers\POSController::class, 'bill'])->name('pos.bill');
+    Route::post('pos/{posSession}/save-bill', [\App\Http\Controllers\POSController::class, 'saveBill'])->name('pos.save-bill');
+    Route::post('pos/{posSession}/close', [\App\Http\Controllers\POSController::class, 'closeSession'])->name('pos.close');
 });

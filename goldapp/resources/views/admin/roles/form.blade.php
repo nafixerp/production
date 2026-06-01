@@ -29,7 +29,7 @@
             </div>
             @endif
 
-            <form method="POST" action="{{ isset($role) ? route('roles.update', $role) : route('roles.store') }}">
+            <form method="POST" action="{{ isset($role) ? route('admin.roles.update', $role) : route('admin.roles.store') }}">
                 @csrf
                 @if(isset($role)) @method('PUT') @endif
 
@@ -56,7 +56,7 @@
                 </div>
 
                 <div class="d-flex gap-2 justify-content-end">
-                    <a href="{{ route('roles.index') }}" class="btn btn-sm" style="background:rgba(255,255,255,.05);color:#a09878;border:1px solid var(--border-gold)">
+                    <a href="{{ route('admin.roles.index') }}" class="btn btn-sm" style="background:rgba(255,255,255,.05);color:#a09878;border:1px solid var(--border-gold)">
                         <i class="bi bi-x me-1"></i>Cancel
                     </a>
                     <button type="submit" class="btn btn-sm" style="background:var(--gold);color:#000;font-weight:600;padding:8px 20px">
