@@ -1,0 +1,146 @@
+No,Module
+1,Dashboard
+2,Company Master
+3,Branch Master
+4,Warehouse Master
+5,Kitchen/Factory Master
+6,Department Master
+7,Staff Master
+8,Vendor/Supplier Master
+9,Customer Master
+10,Distributor Master
+11,Route Master
+12,Vehicle Master
+13,Unit Master
+14,Tax/GST Master
+15,HSN/SAC Master
+16,Raw Material Master
+17,Packing Material Master
+18,Finished Goods Master
+19,Semi Finished Goods Master
+20,Recipe/BOM Master
+21,Recipe Versioning
+22,Ingredient Substitution
+23,Nutritional Information
+24,Allergen Master
+25,FSSAI Compliance
+26,Purchase Requisition
+27,Purchase Enquiry/RFQ
+28,Purchase Order
+29,Goods Receipt Note
+30,Raw Material QC
+31,Purchase Invoice
+32,Purchase Return
+33,Vendor Payment
+34,Vendor Ledger
+35,Vendor Rating
+36,Contract Pricing
+37,Raw Material Inventory
+38,Batch/Lot Tracking
+39,Expiry Tracking
+40,FIFO/FEFO
+41,Cold Storage Tracking
+42,Stock Ledger
+43,Stock Transfer
+44,Stock Adjustment
+45,Physical Stock Verification
+46,Damage/Expiry Write-off
+47,Reorder Management
+48,Production Planning
+49,Production Order
+50,Material Issue To Production
+51,WIP Management
+52,Preparation Stage
+53,Cooking Stage
+54,Cooling Stage
+55,Packing Stage
+56,Finished Goods Receipt
+57,Yield/Wastage Capture
+58,By-product Capture
+59,Rework Management
+60,Production Costing
+61,Machine Master
+62,Machine Utilization
+63,Downtime Tracking
+64,Maintenance Schedule
+65,Quality Control
+66,Incoming QC
+67,In-process QC
+68,Final QC
+69,Lab Test Register
+70,Sample Retention
+71,HACCP Checklist
+72,Batch Traceability
+73,Recall Management
+74,Finished Goods Warehouse
+75,Dispatch Planning
+76,Sales Quotation
+77,Sales Order
+78,Retail POS
+79,Wholesale Sales
+80,Distributor Sales
+81,Sales Invoice
+82,Sales Return
+83,Credit Note
+84,Delivery Note
+85,Route Delivery
+86,Courier Integration
+87,Fleet Management
+88,E-commerce Product Catalog
+89,Online Store
+90,Cart
+91,Checkout
+92,Online Payment
+93,Coupons/Offers
+94,Loyalty Points
+95,Customer Portal
+96,Distributor Portal
+97,Online Returns
+98,Marketplace Integration
+99,Swiggy/Zomato/Amazon/Shopify/WooCommerce Integration
+100,CRM Leads
+101,CRM Follow-up
+102,Customer Complaints
+103,Feedback
+104,Accounts Chart Of Accounts
+105,Receipt Voucher
+106,Payment Voucher
+107,Journal Voucher
+108,Contra Voucher
+109,Debit/Credit Note
+110,Bank Reconciliation
+111,Cash Book
+112,Bank Book
+113,General Ledger
+114,Trial Balance
+115,Profit And Loss
+116,Balance Sheet
+117,Cash Flow
+118,COGS Posting
+119,GST Purchase Register
+120,GST Sales Register
+121,GSTR1
+122,GSTR3B
+123,E-invoice
+124,E-way Bill
+125,Payroll
+126,Attendance
+127,Leave Management
+128,Shift Management
+129,Overtime
+130,PF/ESI/TDS
+131,Salary Posting
+132,Asset Management
+133,Budgeting
+134,Approval Workflow
+135,Notification Center
+136,SMS/Email/WhatsApp Logs
+137,Document Vault
+138,Barcode/QR
+139,Mobile App API
+140,Admin Settings
+141,User Role Permission
+142,Audit Logs
+143,Backup Restore
+144,Report Builder
+145,BI Dashboard
