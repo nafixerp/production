@@ -1,60 +1,102 @@
 <?php
+
 namespace App\Http\Controllers;
+
+use App\Models\Employee;
+use App\Models\OvertimeRecord;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class OvertimeController extends Controller
 {
-    protected $table = 'overtime';
-    protected $title = 'Overtime';
-
     public function index(Request $request)
     {
-        $q = $request->get('q');
-        $rows = DB::table($this->table)
-            ->when($q, fn($query) => $query->where('name','like',"%$q%")->orWhere('code','like',"%$q%"))
-            ->orderByDesc('id')->paginate(20)->withQueryString();
-        return view('generic.index', ['rows'=>$rows,'title'=>$this->title,'slug'=>'overtime','q'=>$q,'table'=>$this->table]);
+        $employeeId = $request->get('employee_id');
+        $month      = $request->get('month');
+        $year       = $request->get('year', now()->year);
+
+        $records = OvertimeRecord::with('employee')
+            ->when($employeeId, fn($q) => $q->where('employee_id', $employeeId))
+            ->when($month, fn($q) => $q->whereMonth('date', $month)->whereYear('date', $year))
+            ->orderByDesc('date')
+            ->paginate(20)
+            ->withQueryString();
+
+        $employees = Employee::where('status', 'active')->orderBy('name')->get();
+
+        return view('hrms.overtime.index', compact('records', 'employees', 'employeeId', 'month', 'year'));
     }
 
     public function create()
     {
-        return view('generic.create', ['title'=>$this->title,'slug'=>'overtime','table'=>$this->table,'row'=>null]);
+        $employees = Employee::where('status', 'active')->orderBy('name')->get();
+        $record    = null;
+        return view('hrms.overtime.form', compact('employees', 'record'));
     }
 
     public function store(Request $request)
     {
-        $data = $request->except(['_token','_method']);
-        $data['created_at'] = now();
-        $data['updated_at'] = now();
-        $data['status'] = $data['status'] ?? 'active';
-        DB::table($this->table)->insert($data);
-        return redirect()->route('overtime.index')->with('success', '$this->title saved successfully.');
+        $data = $request->validate([
+            'employee_id'   => 'required|exists:employees,id',
+            'date'          => 'required|date',
+            'hours'         => 'required|numeric|min:0.5',
+            'rate_per_hour' => 'nullable|numeric|min:0',
+        ]);
+
+        $data['amount'] = ($data['hours'] ?? 0) * ($data['rate_per_hour'] ?? 0);
+        $data['status'] = 'pending';
+
+        OvertimeRecord::create($data);
+
+        return redirect()->route('overtime.index')->with('success', 'Overtime record added.');
     }
 
     public function show($id)
     {
-        $row = DB::table($this->table)->find($id);
-        return view('generic.show', ['title'=>$this->title,'slug'=>'overtime','table'=>$this->table,'row'=>$row]);
+        $record    = OvertimeRecord::with('employee')->findOrFail($id);
+        $employees = Employee::where('status', 'active')->orderBy('name')->get();
+        return view('hrms.overtime.form', compact('record', 'employees'));
     }
 
     public function edit($id)
     {
-        $row = DB::table($this->table)->find($id);
-        return view('generic.create', ['title'=>$this->title,'slug'=>'overtime','table'=>$this->table,'row'=>$row]);
+        $record    = OvertimeRecord::with('employee')->findOrFail($id);
+        $employees = Employee::where('status', 'active')->orderBy('name')->get();
+        return view('hrms.overtime.form', compact('record', 'employees'));
     }
 
     public function update(Request $request, $id)
     {
-        $data = $request->except(['_token','_method']);
-        $data['updated_at'] = now();
-        DB::table($this->table)->where('id',$id)->update($data);
-        return redirect()->route('overtime.index')->with('success', '$this->title updated successfully.');
+        $record = OvertimeRecord::findOrFail($id);
+
+        $data = $request->validate([
+            'employee_id'   => 'required|exists:employees,id',
+            'date'          => 'required|date',
+            'hours'         => 'required|numeric|min:0.5',
+            'rate_per_hour' => 'nullable|numeric|min:0',
+        ]);
+
+        $data['amount'] = ($data['hours'] ?? 0) * ($data['rate_per_hour'] ?? 0);
+
+        $record->update($data);
+
+        return redirect()->route('overtime.index')->with('success', 'Overtime record updated.');
     }
 
     public function destroy($id)
     {
-        DB::table($this->table)->where('id',$id)->delete();
-        return redirect()->route('overtime.index')->with('success', '$this->title deleted.');
+        OvertimeRecord::findOrFail($id)->delete();
+        return redirect()->route('overtime.index')->with('success', 'Overtime record deleted.');
+    }
+
+    public function approve($id)
+    {
+        $record = OvertimeRecord::findOrFail($id);
+        $record->update([
+            'status'      => 'approved',
+            'approved_by' => Auth::id(),
+            'amount'      => $record->hours * $record->rate_per_hour,
+        ]);
+        return back()->with('success', 'Overtime approved. Amount: ₹' . number_format($record->amount, 2));
     }
 }

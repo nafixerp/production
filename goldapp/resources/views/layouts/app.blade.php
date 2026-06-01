@@ -310,12 +310,13 @@
             <span><i class="bi bi-person-badge me-1"></i> HRMS</span><span class="arrow">▶</span>
         </button>
         <div class="collapse nav-sub" id="menu-hrms">
-            <a href="{{ route('payroll.index') }}" class="nav-link"><span class="dot"></span> Payroll</a>
+            <a href="{{ route('employees.index') }}" class="nav-link"><span class="dot"></span> Employees</a>
             <a href="{{ route('attendance.index') }}" class="nav-link"><span class="dot"></span> Attendance</a>
             <a href="{{ route('leaves.index') }}" class="nav-link"><span class="dot"></span> Leave</a>
             <a href="{{ route('shifts.index') }}" class="nav-link"><span class="dot"></span> Shifts</a>
             <a href="{{ route('overtime.index') }}" class="nav-link"><span class="dot"></span> Overtime</a>
             <a href="{{ route('pf-esi-tds.index') }}" class="nav-link"><span class="dot"></span> PF/ESI/TDS</a>
+            <a href="{{ route('payroll.index') }}" class="nav-link"><span class="dot"></span> Payroll</a>
             <a href="{{ route('salary-posting.index') }}" class="nav-link"><span class="dot"></span> Salary Posting</a>
         </div>
 
@@ -451,8 +452,12 @@
                     <a class="tn-link" href="{{ route('crm-opportunities.index') }}">Opportunities</a>
                     <a class="tn-link" href="{{ route('customer-complaints.index') }}">Complaints</a>
                     <div class="tn-col-title" style="margin-top:8px">HR &amp; Payroll</div>
+                    <a class="tn-link" href="{{ route('employees.index') }}">Employees</a>
                     <a class="tn-link" href="{{ route('attendance.index') }}">Attendance</a>
                     <a class="tn-link" href="{{ route('leaves.index') }}">Leave</a>
+                    <a class="tn-link" href="{{ route('shifts.index') }}">Shifts</a>
+                    <a class="tn-link" href="{{ route('overtime.index') }}">Overtime</a>
+                    <a class="tn-link" href="{{ route('pf-esi-tds.index') }}">PF/ESI/TDS</a>
                     <a class="tn-link" href="{{ route('payroll.index') }}">Payroll</a>
                     <a class="tn-link" href="{{ route('salary-posting.index') }}">Salary Posting</a>
                 </div>

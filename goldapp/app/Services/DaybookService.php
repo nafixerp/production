@@ -467,6 +467,68 @@ class DaybookService
     }
 
     /**
+     * SALARY POSTING daybook entries
+     *
+     * Slno 1 (SAL/YYMM/NNNN):
+     *   SALARY account  -net_total   (Debit salary expense)
+     *   CASH account    +net_total   (Credit cash/bank — salary paid)
+     *
+     * Slno 2 (SAL/YYMM/NNNN+1):
+     *   LABOUR account  -pf_employer_total   (Debit employer PF contribution)
+     *   PF-LIAB account +pf_employer_total   (Credit PF liability)
+     */
+    public function insertSalaryDaybookEntries(array $data): void
+    {
+        $payrollMonth    = $data['payroll_month'];
+        $netTotal        = (float) $data['net_total'];
+        $pfEmployerTotal = (float) ($data['pf_employer_total'] ?? 0);
+        $month           = $data['month'];
+        $year            = $data['year'];
+
+        $ym    = sprintf('%s%02d', substr($year, 2), $month);
+        $tdate = sprintf('%04d-%02d-%02d', $year, $month, cal_days_in_month(CAL_GREGORIAN, $month, $year));
+        $vtype = 'SAL';
+
+        // Get accounts
+        $salaryAcc = $this->tryGetAccount('SALARY');
+        $cashAcc   = $this->tryGetAccount('CASH');
+        $labourAcc = $this->tryGetAccount('LABOUR');
+        $pfLiabAcc = $this->tryGetAccount('PF-LIAB');
+
+        // Slno 1: Net salary payment
+        $slno1 = $this->nextSlno('SAL', 'daybook_parts');
+        \App\Models\DaybookPart::create([
+            'slno'       => $slno1,
+            'vchno'      => $slno1,
+            'particular' => "Salary Payment - " . date('F', mktime(0, 0, 0, $month, 1)) . " {$year}",
+            'tdate'      => $tdate,
+            'vtype'      => $vtype,
+            'branch_id'  => null,
+            'created_by' => auth()->id(),
+        ]);
+        $this->insertLine($slno1, $salaryAcc, -$netTotal, "Salary Expense {$month}/{$year}", $tdate, $vtype, null);
+        $this->insertLine($slno1, $cashAcc, $netTotal, "Salary Paid {$month}/{$year}", $tdate, $vtype, null);
+        $this->addRoundEntry($slno1, $tdate, $vtype, null);
+
+        // Slno 2: PF employer contribution (only if > 0)
+        if ($pfEmployerTotal > 0) {
+            $slno2 = $this->nextSlno('SAL', 'daybook_parts');
+            \App\Models\DaybookPart::create([
+                'slno'       => $slno2,
+                'vchno'      => $slno2,
+                'particular' => "Employer PF Contribution - " . date('F', mktime(0, 0, 0, $month, 1)) . " {$year}",
+                'tdate'      => $tdate,
+                'vtype'      => $vtype,
+                'branch_id'  => null,
+                'created_by' => auth()->id(),
+            ]);
+            $this->insertLine($slno2, $labourAcc, -$pfEmployerTotal, "Employer PF {$month}/{$year}", $tdate, $vtype, null);
+            $this->insertLine($slno2, $pfLiabAcc, $pfEmployerTotal, "PF Liability {$month}/{$year}", $tdate, $vtype, null);
+            $this->addRoundEntry($slno2, $tdate, $vtype, null);
+        }
+    }
+
+    /**
      * Try multiple account codes, return first found
      */
     private function tryGetAccount(string ...$codes): ?Account

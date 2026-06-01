@@ -1,60 +1,118 @@
 <?php
+
 namespace App\Http\Controllers;
+
+use App\Models\AttendanceRecord;
+use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class AttendanceController extends Controller
 {
-    protected $table = 'attendance';
-    protected $title = 'Attendance';
-
     public function index(Request $request)
     {
-        $q = $request->get('q');
-        $rows = DB::table($this->table)
-            ->when($q, fn($query) => $query->where('name','like',"%$q%")->orWhere('code','like',"%$q%"))
-            ->orderByDesc('id')->paginate(20)->withQueryString();
-        return view('generic.index', ['rows'=>$rows,'title'=>$this->title,'slug'=>'attendance','q'=>$q,'table'=>$this->table]);
+        $month      = $request->get('month', now()->month);
+        $year       = $request->get('year', now()->year);
+        $department = $request->get('department_id');
+
+        $employees = Employee::where('status', 'active')
+            ->when($department, fn($q) => $q->where('department_id', $department))
+            ->orderBy('name')
+            ->get();
+
+        $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+
+        $records = AttendanceRecord::whereIn('employee_id', $employees->pluck('id'))
+            ->whereYear('date', $year)
+            ->whereMonth('date', $month)
+            ->get()
+            ->groupBy('employee_id');
+
+        $departments = DB::table('departments')->orderBy('name')->get();
+
+        return view('hrms.attendance.index', compact(
+            'employees', 'records', 'month', 'year', 'daysInMonth', 'departments', 'department'
+        ));
     }
 
     public function create()
     {
-        return view('generic.create', ['title'=>$this->title,'slug'=>'attendance','table'=>$this->table,'row'=>null]);
+        return redirect()->route('attendance.mark');
+    }
+
+    public function markForm(Request $request)
+    {
+        $date      = $request->get('date', today()->toDateString());
+        $employees = Employee::where('status', 'active')->orderBy('name')->get();
+
+        $existing = AttendanceRecord::whereIn('employee_id', $employees->pluck('id'))
+            ->where('date', $date)
+            ->get()
+            ->keyBy('employee_id');
+
+        return view('hrms.attendance.mark', compact('employees', 'date', 'existing'));
+    }
+
+    public function bulkStore(Request $request)
+    {
+        $request->validate([
+            'date'       => 'required|date',
+            'attendance' => 'required|array',
+        ]);
+
+        $date = $request->date;
+        $now  = now();
+
+        foreach ($request->attendance as $employeeId => $data) {
+            AttendanceRecord::updateOrInsert(
+                ['employee_id' => $employeeId, 'date' => $date],
+                [
+                    'status'         => $data['status'] ?? 'absent',
+                    'in_time'        => (!empty($data['in_time'])) ? $data['in_time'] : null,
+                    'out_time'       => (!empty($data['out_time'])) ? $data['out_time'] : null,
+                    'hours_worked'   => $data['hours_worked'] ?? 0,
+                    'overtime_hours' => $data['overtime_hours'] ?? 0,
+                    'remarks'        => $data['remarks'] ?? null,
+                    'updated_at'     => $now,
+                    'created_at'     => $now,
+                ]
+            );
+        }
+
+        return redirect()->route('attendance.index')->with('success', 'Attendance saved for ' . $date);
     }
 
     public function store(Request $request)
     {
-        $data = $request->except(['_token','_method']);
-        $data['created_at'] = now();
-        $data['updated_at'] = now();
-        $data['status'] = $data['status'] ?? 'active';
-        DB::table($this->table)->insert($data);
-        return redirect()->route('attendance.index')->with('success', '$this->title saved successfully.');
+        return $this->bulkStore($request);
     }
 
     public function show($id)
     {
-        $row = DB::table($this->table)->find($id);
-        return view('generic.show', ['title'=>$this->title,'slug'=>'attendance','table'=>$this->table,'row'=>$row]);
+        $record = AttendanceRecord::with('employee')->findOrFail($id);
+        return view('hrms.attendance.show', compact('record'));
     }
 
     public function edit($id)
     {
-        $row = DB::table($this->table)->find($id);
-        return view('generic.create', ['title'=>$this->title,'slug'=>'attendance','table'=>$this->table,'row'=>$row]);
+        $record    = AttendanceRecord::findOrFail($id);
+        $date      = $record->date->toDateString();
+        $employees = Employee::where('status', 'active')->orderBy('name')->get();
+        $existing  = AttendanceRecord::whereIn('employee_id', $employees->pluck('id'))
+            ->where('date', $date)
+            ->get()
+            ->keyBy('employee_id');
+        return view('hrms.attendance.mark', compact('employees', 'date', 'existing'));
     }
 
     public function update(Request $request, $id)
     {
-        $data = $request->except(['_token','_method']);
-        $data['updated_at'] = now();
-        DB::table($this->table)->where('id',$id)->update($data);
-        return redirect()->route('attendance.index')->with('success', '$this->title updated successfully.');
+        return $this->bulkStore($request);
     }
 
     public function destroy($id)
     {
-        DB::table($this->table)->where('id',$id)->delete();
-        return redirect()->route('attendance.index')->with('success', '$this->title deleted.');
+        AttendanceRecord::findOrFail($id)->delete();
+        return back()->with('success', 'Record deleted.');
     }
 }

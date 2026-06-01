@@ -135,6 +135,7 @@ use App\Http\Controllers\GSTR3BController;
 use App\Http\Controllers\EinvoiceController;
 use App\Http\Controllers\EwayBillController;
 // HRMS
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\LeaveManagementController;
@@ -352,13 +353,22 @@ Route::middleware('auth')->group(function () {
     Route::resource('einvoice',                 EinvoiceController::class);
     Route::resource('eway-bill',                EwayBillController::class);
 
-    // HRMS (125-131)
+    // HRMS
+    Route::resource('employees',                EmployeeController::class);
+    Route::get('attendance/mark',               [AttendanceController::class,'markForm'])->name('attendance.mark');
+    Route::post('attendance/mark',              [AttendanceController::class,'bulkStore'])->name('attendance.bulk');
     Route::resource('payroll',                  PayrollController::class);
+    Route::post('payroll/process',              [PayrollController::class,'process'])->name('payroll.process');
+    Route::post('payroll/{id}/post-salary',     [PayrollController::class,'postSalary'])->name('payroll.postSalary');
     Route::resource('attendance',               AttendanceController::class);
     Route::resource('leaves',                   LeaveManagementController::class);
+    Route::post('leaves/{id}/approve',          [LeaveManagementController::class,'approve'])->name('leaves.approve');
+    Route::post('leaves/{id}/reject',           [LeaveManagementController::class,'reject'])->name('leaves.reject');
     Route::resource('shifts',                   ShiftManagementController::class);
     Route::resource('overtime',                 OvertimeController::class);
+    Route::post('overtime/{id}/approve',        [OvertimeController::class,'approve'])->name('overtime.approve');
     Route::resource('pf-esi-tds',               PFESITDSController::class);
+    Route::post('pf-esi-tds/{id}/mark-paid',    [PFESITDSController::class,'markPaid'])->name('pf-esi-tds.markPaid');
     Route::resource('salary-posting',           SalaryPostingController::class);
 
     // SETTINGS & ADMIN (132-145)

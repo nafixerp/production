@@ -1,60 +1,80 @@
 <?php
+
 namespace App\Http\Controllers;
+
+use App\Models\Shift;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class ShiftManagementController extends Controller
 {
-    protected $table = 'shift';
-    protected $title = 'Shift Management';
-
     public function index(Request $request)
     {
-        $q = $request->get('q');
-        $rows = DB::table($this->table)
-            ->when($q, fn($query) => $query->where('name','like',"%$q%")->orWhere('code','like',"%$q%"))
-            ->orderByDesc('id')->paginate(20)->withQueryString();
-        return view('generic.index', ['rows'=>$rows,'title'=>$this->title,'slug'=>'shifts','q'=>$q,'table'=>$this->table]);
+        $q      = $request->get('q');
+        $shifts = Shift::when($q, fn($query) => $query->where('name', 'like', "%$q%")->orWhere('code', 'like', "%$q%"))
+            ->orderBy('name')
+            ->paginate(20)
+            ->withQueryString();
+
+        return view('hrms.shifts.index', compact('shifts', 'q'));
     }
 
     public function create()
     {
-        return view('generic.create', ['title'=>$this->title,'slug'=>'shifts','table'=>$this->table,'row'=>null]);
+        $shift = null;
+        return view('hrms.shifts.form', compact('shift'));
     }
 
     public function store(Request $request)
     {
-        $data = $request->except(['_token','_method']);
-        $data['created_at'] = now();
-        $data['updated_at'] = now();
-        $data['status'] = $data['status'] ?? 'active';
-        DB::table($this->table)->insert($data);
-        return redirect()->route('shifts.index')->with('success', '$this->title saved successfully.');
+        $data = $request->validate([
+            'name'          => 'required|string|max:100',
+            'code'          => 'required|string|max:20|unique:shifts',
+            'start_time'    => 'required',
+            'end_time'      => 'required',
+            'break_minutes' => 'nullable|integer|min:0',
+            'working_hours' => 'nullable|numeric|min:0',
+            'status'        => 'nullable|in:active,inactive',
+        ]);
+
+        Shift::create($data);
+
+        return redirect()->route('shifts.index')->with('success', 'Shift created successfully.');
     }
 
     public function show($id)
     {
-        $row = DB::table($this->table)->find($id);
-        return view('generic.show', ['title'=>$this->title,'slug'=>'shifts','table'=>$this->table,'row'=>$row]);
+        $shift = Shift::findOrFail($id);
+        return view('hrms.shifts.form', ['shift' => $shift]);
     }
 
     public function edit($id)
     {
-        $row = DB::table($this->table)->find($id);
-        return view('generic.create', ['title'=>$this->title,'slug'=>'shifts','table'=>$this->table,'row'=>$row]);
+        $shift = Shift::findOrFail($id);
+        return view('hrms.shifts.form', compact('shift'));
     }
 
     public function update(Request $request, $id)
     {
-        $data = $request->except(['_token','_method']);
-        $data['updated_at'] = now();
-        DB::table($this->table)->where('id',$id)->update($data);
-        return redirect()->route('shifts.index')->with('success', '$this->title updated successfully.');
+        $shift = Shift::findOrFail($id);
+
+        $data = $request->validate([
+            'name'          => 'required|string|max:100',
+            'code'          => 'required|string|max:20|unique:shifts,code,' . $id,
+            'start_time'    => 'required',
+            'end_time'      => 'required',
+            'break_minutes' => 'nullable|integer|min:0',
+            'working_hours' => 'nullable|numeric|min:0',
+            'status'        => 'nullable|in:active,inactive',
+        ]);
+
+        $shift->update($data);
+
+        return redirect()->route('shifts.index')->with('success', 'Shift updated successfully.');
     }
 
     public function destroy($id)
     {
-        DB::table($this->table)->where('id',$id)->delete();
-        return redirect()->route('shifts.index')->with('success', '$this->title deleted.');
+        Shift::findOrFail($id)->delete();
+        return redirect()->route('shifts.index')->with('success', 'Shift deleted.');
     }
 }

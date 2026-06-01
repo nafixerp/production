@@ -1,60 +1,63 @@
 <?php
+
 namespace App\Http\Controllers;
+
+use App\Models\Daybook;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class SalaryPostingController extends Controller
 {
-    protected $table = 'salary_posting';
-    protected $title = 'Salary Posting';
-
     public function index(Request $request)
     {
-        $q = $request->get('q');
-        $rows = DB::table($this->table)
-            ->when($q, fn($query) => $query->where('name','like',"%$q%")->orWhere('code','like',"%$q%"))
-            ->orderByDesc('id')->paginate(20)->withQueryString();
-        return view('generic.index', ['rows'=>$rows,'title'=>$this->title,'slug'=>'salary-posting','q'=>$q,'table'=>$this->table]);
+        $month = $request->get('month');
+        $year  = $request->get('year', now()->year);
+
+        // Fetch daybook entries with slno starting with SAL/
+        $entries = DB::table('daybook_parts')
+            ->where('slno', 'like', 'SAL/%')
+            ->when($month, function ($q) use ($month, $year) {
+                $ym = sprintf('%02d%02d', substr($year, 2), $month);
+                $q->where('slno', 'like', "SAL/{$ym}/%");
+            })
+            ->orderByDesc('tdate')
+            ->orderByDesc('id')
+            ->paginate(20)
+            ->withQueryString();
+
+        return view('hrms.salary-posting.index', compact('entries', 'month', 'year'));
     }
 
     public function create()
     {
-        return view('generic.create', ['title'=>$this->title,'slug'=>'salary-posting','table'=>$this->table,'row'=>null]);
+        return redirect()->route('salary-posting.index');
     }
 
     public function store(Request $request)
     {
-        $data = $request->except(['_token','_method']);
-        $data['created_at'] = now();
-        $data['updated_at'] = now();
-        $data['status'] = $data['status'] ?? 'active';
-        DB::table($this->table)->insert($data);
-        return redirect()->route('salary-posting.index')->with('success', '$this->title saved successfully.');
+        return redirect()->route('salary-posting.index');
     }
 
     public function show($id)
     {
-        $row = DB::table($this->table)->find($id);
-        return view('generic.show', ['title'=>$this->title,'slug'=>'salary-posting','table'=>$this->table,'row'=>$row]);
+        // Show all daybook lines for this slno
+        $part  = DB::table('daybook_parts')->where('id', $id)->first();
+        $lines = $part ? DB::table('daybook')->where('slno', $part->slno)->get() : collect();
+        return view('hrms.salary-posting.show', compact('part', 'lines'));
     }
 
     public function edit($id)
     {
-        $row = DB::table($this->table)->find($id);
-        return view('generic.create', ['title'=>$this->title,'slug'=>'salary-posting','table'=>$this->table,'row'=>$row]);
+        return $this->show($id);
     }
 
     public function update(Request $request, $id)
     {
-        $data = $request->except(['_token','_method']);
-        $data['updated_at'] = now();
-        DB::table($this->table)->where('id',$id)->update($data);
-        return redirect()->route('salary-posting.index')->with('success', '$this->title updated successfully.');
+        return redirect()->route('salary-posting.index');
     }
 
     public function destroy($id)
     {
-        DB::table($this->table)->where('id',$id)->delete();
-        return redirect()->route('salary-posting.index')->with('success', '$this->title deleted.');
+        return redirect()->route('salary-posting.index');
     }
 }

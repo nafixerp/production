@@ -1,60 +1,70 @@
 <?php
+
 namespace App\Http\Controllers;
+
+use App\Models\PayrollMonth;
+use App\Models\PayrollDetail;
+use App\Models\PfEsiTdsRecord;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class PFESITDSController extends Controller
 {
-    protected $table = 'pf_esi_tds';
-    protected $title = 'PF/ESI/TDS';
-
     public function index(Request $request)
     {
-        $q = $request->get('q');
-        $rows = DB::table($this->table)
-            ->when($q, fn($query) => $query->where('name','like',"%$q%")->orWhere('code','like',"%$q%"))
-            ->orderByDesc('id')->paginate(20)->withQueryString();
-        return view('generic.index', ['rows'=>$rows,'title'=>$this->title,'slug'=>'pf-esi-tds','q'=>$q,'table'=>$this->table]);
+        $records = PfEsiTdsRecord::with('payrollMonth')
+            ->orderByDesc('year')
+            ->orderByDesc('month')
+            ->paginate(20);
+
+        return view('hrms.pf-esi-tds.index', compact('records'));
     }
 
     public function create()
     {
-        return view('generic.create', ['title'=>$this->title,'slug'=>'pf-esi-tds','table'=>$this->table,'row'=>null]);
+        return redirect()->route('pf-esi-tds.index');
     }
 
     public function store(Request $request)
     {
-        $data = $request->except(['_token','_method']);
-        $data['created_at'] = now();
-        $data['updated_at'] = now();
-        $data['status'] = $data['status'] ?? 'active';
-        DB::table($this->table)->insert($data);
-        return redirect()->route('pf-esi-tds.index')->with('success', '$this->title saved successfully.');
+        return redirect()->route('pf-esi-tds.index');
     }
 
     public function show($id)
     {
-        $row = DB::table($this->table)->find($id);
-        return view('generic.show', ['title'=>$this->title,'slug'=>'pf-esi-tds','table'=>$this->table,'row'=>$row]);
+        $record  = PfEsiTdsRecord::with('payrollMonth')->findOrFail($id);
+        $details = PayrollDetail::where('payroll_month_id', $record->payroll_month_id)
+            ->orderBy('employee_name')
+            ->get();
+
+        return view('hrms.pf-esi-tds.show', compact('record', 'details'));
     }
 
     public function edit($id)
     {
-        $row = DB::table($this->table)->find($id);
-        return view('generic.create', ['title'=>$this->title,'slug'=>'pf-esi-tds','table'=>$this->table,'row'=>$row]);
+        return $this->show($id);
     }
 
     public function update(Request $request, $id)
     {
-        $data = $request->except(['_token','_method']);
-        $data['updated_at'] = now();
-        DB::table($this->table)->where('id',$id)->update($data);
-        return redirect()->route('pf-esi-tds.index')->with('success', '$this->title updated successfully.');
+        return redirect()->route('pf-esi-tds.index');
     }
 
     public function destroy($id)
     {
-        DB::table($this->table)->where('id',$id)->delete();
-        return redirect()->route('pf-esi-tds.index')->with('success', '$this->title deleted.');
+        return redirect()->route('pf-esi-tds.index');
+    }
+
+    public function markPaid(Request $request, $id)
+    {
+        $record = PfEsiTdsRecord::findOrFail($id);
+
+        $record->update([
+            'status'         => 'paid',
+            'challan_number' => $request->challan_number,
+            'challan_date'   => $request->challan_date,
+            'payment_date'   => $request->payment_date ?? now()->toDateString(),
+        ]);
+
+        return back()->with('success', 'PF/ESI/TDS marked as paid.');
     }
 }
